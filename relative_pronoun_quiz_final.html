@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>関係詞 並び替えクイズ</title>
+<style>
+:root {
+  --bg: #f4f6ff;
+  --card: #ffffff;
+  --primary: #3949ab;
+  --primary-light: #e8eaf6;
+  --accent: #7986cb;
+  --text: #1a1a2e;
+  --sub: #666;
+  --border: #dde2ff;
+  --correct: #2e7d32;
+  --correct-bg: #e8f5e9;
+  --wrong: #c62828;
+  --wrong-bg: #ffebee;
+  --blue: #185FA5;
+  --red: #D85A30;
+  --green: #1D9E75;
+  --amber: #BA7517;
+  --shadow: 0 2px 16px rgba(57,73,171,0.09);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);font-family:'Hiragino Kaku Gothic Pro','Noto Sans JP',Meiryo,sans-serif;min-height:100vh;padding:14px;color:var(--text)}
+#app{max-width:560px;margin:0 auto}
+
+/* START SCREEN */
+.start-screen{padding:8px 0}
+.start-title{font-size:22px;font-weight:700;text-align:center;margin-bottom:4px;color:var(--primary)}
+.start-sub{font-size:13px;color:var(--sub);text-align:center;margin-bottom:24px}
+.count-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
+.count-btn{padding:14px;border:2px solid var(--border);border-radius:12px;background:#fff;font-size:15px;font-weight:700;color:var(--primary);cursor:pointer;transition:all .15s;text-align:center}
+.count-btn:hover,.count-btn.active{border-color:var(--primary);background:var(--primary-light)}
+.count-btn:active{transform:scale(0.97)}
+.start-btn{width:100%;padding:15px;background:linear-gradient(135deg,#5c6bc0,#3949ab);color:#fff;border:none;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:opacity .2s}
+.start-btn:disabled{opacity:.35;cursor:default}
+
+/* HEADER */
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.unit-label{font-size:12px;color:var(--primary);font-weight:700;letter-spacing:1px}
+.progress-label{font-size:12px;color:var(--sub);font-weight:600}
+.progress-bar{height:5px;background:var(--border);border-radius:99px;margin-bottom:16px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:99px;transition:width .4s ease}
+
+/* CARD */
+.card{background:var(--card);border-radius:18px;padding:20px 16px;box-shadow:var(--shadow);margin-bottom:12px}
+.type-badge{display:inline-block;background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:700;border-radius:99px;padding:3px 11px;margin-bottom:12px;letter-spacing:.5px}
+.japanese-box{margin-bottom:16px}
+.japanese-label{font-size:11px;color:var(--sub);margin-bottom:4px}
+.japanese{font-size:17px;font-weight:700;line-height:1.7}
+
+/* ANSWER ZONE */
+.answer-zone{min-height:52px;background:#f8f9ff;border:2px dashed #c5cae9;border-radius:11px;padding:9px 11px;display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:12px;transition:border-color .2s}
+.answer-zone.drag-over{border-color:var(--primary);background:#eef0fb}
+.placeholder{color:#bbb;font-size:12px;user-select:none}
+
+/* CHIPS */
+.word-bank{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;min-height:44px}
+.chip{padding:8px 13px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;user-select:none;touch-action:none;transition:transform .1s,opacity .2s;border:none;outline:none;line-height:1}
+.chip.bank{background:var(--primary-light);color:var(--primary)}
+.chip.bank:active{transform:scale(.95)}
+.chip.selected{background:var(--primary);color:#fff}
+.chip.selected:active{transform:scale(.95)}
+.chip.used{opacity:0;pointer-events:none;width:0;padding:0;margin:0;overflow:hidden}
+.chip.dragging{opacity:.35;transform:scale(.93)}
+.chip.correct-chip{background:#43a047!important;color:#fff!important}
+.chip.wrong-chip{background:#e53935!important;color:#fff!important}
+
+/* GHOST */
+#ghost{position:fixed;pointer-events:none;z-index:9999;padding:8px 13px;border-radius:9px;font-size:13px;font-weight:600;background:var(--primary);color:#fff;box-shadow:0 6px 20px rgba(57,73,171,.35);transform:translate(-50%,-55%) scale(1.1);display:none;white-space:nowrap}
+
+/* BUTTONS */
+.btn{width:100%;padding:13px;background:linear-gradient(135deg,#5c6bc0,#3949ab);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:1px;margin-top:4px;transition:opacity .2s,transform .1s}
+.btn:disabled{opacity:.35;cursor:default}
+.btn:active:not(:disabled){transform:scale(.98)}
+.btn-clear{background:none;border:1.5px solid #c5cae9;color:var(--sub);width:100%;padding:9px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px;margin-bottom:4px;transition:background .15s}
+.btn-clear:active{background:var(--primary-light)}
+
+/* RESULT */
+.result-box{display:flex;align-items:flex-start;gap:11px;border-radius:11px;padding:12px 14px;margin-bottom:10px}
+.result-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.result-label{font-weight:700;font-size:15px;margin-bottom:3px}
+.correct-ans{font-size:12px;color:#555;line-height:1.7;margin-top:3px}
+.correct-label{font-weight:700;color:var(--wrong)}
+
+/* STEPS */
+.steps-wrap{margin-bottom:12px}
+.step-block{background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:7px;opacity:0;transition:opacity .35s}
+.step-num{font-size:10px;font-weight:700;color:var(--primary);letter-spacing:.5px;margin-bottom:7px}
+.step-ja{font-size:14px;font-weight:700;line-height:1.8;margin-bottom:8px;padding:8px 10px;background:#f8f9ff;border-radius:7px}
+.step-body{font-size:13px;font-family:'Courier New',Courier,monospace;line-height:1.9}
+.hl-blue{color:var(--blue);font-weight:600}
+.hl-red{color:var(--red);font-weight:600}
+.hl-green{color:var(--green);font-weight:600}
+.hl-amber{color:var(--amber);font-weight:600}
+.strike{text-decoration:line-through;opacity:.6}
+
+/* EXPLANATION */
+.exp-block{background:#fffde7;border:1px solid #ffe082;border-radius:10px;padding:11px 13px;margin-bottom:10px;opacity:0;transition:opacity .35s}
+.exp-label{font-size:10px;font-weight:700;color:#f57f17;margin-bottom:6px;letter-spacing:.5px}
+.exp-title{font-size:12px;font-weight:700;color:#555;margin-bottom:3px;margin-top:8px}
+.exp-title:first-of-type{margin-top:0}
+.exp-text{font-size:12px;color:#444;line-height:1.75}
+.exp-code{font-family:'Courier New',monospace;font-size:12px;background:#fff8e1;padding:6px 9px;border-radius:6px;margin:4px 0;display:block;line-height:1.7}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;margin-right:4px;vertical-align:middle}
+.tag-blue{background:#e3f2fd;color:#1565c0}
+.tag-red{background:#fce4ec;color:#880e4f}
+.tag-green{background:#e8f5e9;color:#1b5e20}
+
+/* SCORE CHIP */
+.score-chip{text-align:center;margin-top:12px;color:var(--primary);font-weight:700;font-size:13px}
+
+/* PHASE1 */
+.ph1-label{font-size:10px;font-weight:700;color:var(--primary);letter-spacing:.5px;margin-bottom:8px}
+.ph1-sent{background:#f8f9ff;border-radius:8px;padding:9px 11px;font-size:13px;font-family:'Courier New',monospace;line-height:1.8;margin-bottom:8px}
+.ph1-q{font-size:12px;color:var(--sub);margin-bottom:8px;line-height:1.5}
+.ph1-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:6px}
+.ph1-btn{padding:10px 8px;font-size:12px;font-weight:600;border-radius:9px;border:1.5px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;transition:all .15s;line-height:1.3}
+.ph1-btn:active{transform:scale(.97)}
+.ph1-btn.ok{background:#e8f5e9;color:#2e7d32;border-color:#c8e6c9;pointer-events:none}
+.ph1-btn.ng{background:#ffebee;color:#c62828;border-color:#ffcdd2;pointer-events:none}
+.ph1-btn:disabled{pointer-events:none}
+.ph1-fb{font-size:12px;line-height:1.6;padding:8px 10px;border-radius:7px;margin-top:4px;display:none}
+.ph1-fb.ok{background:#e8f5e9;color:#2e7d32}
+.ph1-fb.ng{background:#ffebee;color:#c62828}
+.ph1-step{background:#fff;border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:8px}
+.ph1-step.locked{opacity:.35;pointer-events:none}
+.ph1-complete{background:#e8f5e9;border:1px solid #c8e6c9;border-radius:11px;padding:12px 14px;margin-bottom:8px;display:none}
+.ph1-phase-badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;margin-bottom:10px;display:inline-block}
+.ph1-phase-badge.p1{background:#e8eaf6;color:#3c3489}
+.ph1-phase-badge.p2{background:#e8f5e9;color:#1b5e20}
+
+/* FINISH */
+.finish{text-align:center;padding:16px 0}
+.finish-icon{font-size:60px;margin-bottom:6px}
+.finish-title{font-size:24px;font-weight:900;margin-bottom:18px}
+.score-display{display:flex;justify-content:center;align-items:baseline;gap:4px;margin-bottom:6px}
+.score-big{font-size:68px;font-weight:900;color:var(--primary);line-height:1}
+.score-of{font-size:24px;color:var(--sub)}
+.score-msg{color:var(--sub);font-size:14px;margin-bottom:24px;line-height:1.6}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="ghost"></div>
+<script>
+// ===================== DATA =====================
+const ALL_Q = [
+{id:203,type:"who（主格・人）",
+ ja:'<span class="hl-blue">私には</span><span class="hl-red">料理が得意な</span><span class="hl-blue">友人がいます。</span>',
+ jaPlain:"私には料理が得意な友人がいます。",
+ words:["I","have","a","friend","who","is","good","at","cooking"],
+ answer:"I have a friend who is good at cooking.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">I have a friend.</span><br>文B: <span class="hl-red">The friend is good at cooking.</span>'},
+  {num:"STEP 2　共通する名詞（先行詞）を見つける",
+   body:'文A: I have a <u>friend</u>.<br>文B: <u>The friend</u> is good at cooking.<br>→ 共通！これが<strong>先行詞</strong>'},
+  {num:"STEP 3　文Bの先行詞を関係代名詞に置き換える",
+   body:'<span class="hl-red strike">The friend</span> → <span class="hl-green">who</span>（人が先行詞 → who）<br>文B: <span class="hl-green">who</span> is good at cooking.'},
+  {num:"STEP 4　先行詞の直後にくっつける",
+   body:'I have a <span class="hl-blue">friend</span> <span class="hl-green">who is good at cooking</span>.'},
+ ],
+ exp:{
+  role:"主格",
+  points:[
+   {title:"なぜwhoを使うか",text:"先行詞がa friend（人）なので、関係代名詞はwhoまたはthatを使う。"},
+   {title:"主格とは",text:"関係代名詞の後ろを見ると「is good at cooking」と動詞が直接続いている。これは節の中でwhoが主語の役割をしているから。主語が欠落した不完全な文が続く＝主格。"},
+   {title:"主格は省略できない",text:"whoは節の主語なので省略不可。目的格と違い、必ず書く必要がある。",code:"× I have a friend is good at cooking.（whoが抜けると文が壊れる）"},
+  ]
+ }
+},
+{id:204,type:"who（主格・人）",
+ ja:'<span class="hl-blue">男性は</span><span class="hl-red">私に道を尋ねた</span><span class="hl-blue">、香港の出身でした。</span>',
+ jaPlain:"私に道を尋ねた男性は香港の出身でした。",
+ words:["The","man","who","asked","me","the","way","was","from","Hong","Kong"],
+ answer:"The man who asked me the way was from Hong Kong.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">The man was from Hong Kong.</span><br>文B: <span class="hl-red">The man asked me the way.</span>'},
+  {num:"STEP 2　先行詞を見つける",
+   body:'共通: <u>The man</u><br>文Bの先行詞 → <span class="hl-green">who</span> に置き換え'},
+  {num:"STEP 3　先行詞の直後にくっつける",
+   body:'The <span class="hl-blue">man</span> <span class="hl-green">who asked me the way</span> was from Hong Kong.'},
+ ],
+ exp:{
+  role:"主格",
+  points:[
+   {title:"先行詞と関係詞節が離れることがある",text:"日本語では「私に道を尋ねた男性が主語」だが、英語は先に主語(The man)を出し、後から説明を加える語順になる。"},
+   {title:"主語が長くなる構造",text:"The man [who asked me the way] was from Hong Kong.　→ [ ]内が主語を修飾し、wasが主節の動詞。関係詞節をカッコに入れて読むと構造が見やすい。",code:"The man [who asked me the way] was from Hong Kong.\n主語↑                               ↑主節の動詞"},
+  ]
+ }
+},
+{id:205,type:"who(m)/that（目的格・人）",
+ ja:'<span class="hl-blue">作家は村上春樹です。</span><span class="hl-red">私が一番好きな</span><span class="hl-blue">。</span>',
+ jaPlain:"私が一番好きな作家は村上春樹です。",
+ words:["The","writer","that","I","like","best","is","Murakami","Haruki"],
+ answer:"The writer that I like best is Murakami Haruki.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">The writer is Murakami Haruki.</span><br>文B: <span class="hl-red">I like the writer best.</span>'},
+  {num:"STEP 2　文Bで先行詞はどこにあるか",
+   body:'文B: I like <u>the writer</u> best.<br>→ likeの<strong>目的語</strong>の位置にある！ → <span class="tag tag-red">目的格</span>'},
+  {num:"STEP 3　目的格の関係代名詞に置き換え",
+   body:'<span class="hl-red strike">the writer</span> → <span class="hl-green">who(m)/that</span>（省略も可）<br>→ <span class="hl-green">who(m)/that</span> I like best'},
+  {num:"STEP 4　完成",
+   body:'The <span class="hl-blue">writer</span> <span class="hl-green">that</span> I like best is Murakami Haruki.'},
+ ],
+ exp:{
+  role:"目的格",
+  points:[
+   {title:"目的格の見分け方",text:"関係代名詞の後ろをS+Vで読んでみる。「I like best」→ likeの目的語が抜けている。このように目的語が欠落した不完全な文が続く＝目的格。"},
+   {title:"whoとwhomの違い",text:"正式にはwhomだが、現代英語では口語でwhoも使われる。入試ではthatが最も無難。"},
+  ]
+ }
+},
+{id:206,type:"whose（所有格・人）",
+ ja:'<span class="hl-blue">私には友人がいます。</span><span class="hl-red">お兄さんがアニメーターの</span><span class="hl-blue">。</span>',
+ jaPlain:"私にはお兄さんがアニメーターの友人がいます。",
+ words:["I","have","a","friend","whose","brother","is","an","animator"],
+ answer:"I have a friend whose brother is an animator.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">I have a friend.</span><br>文B: <span class="hl-red">The friend\'s brother is an animator.</span>'},
+  {num:"STEP 2　所有関係を確認する",
+   body:'文B: <span class="hl-red">The friend\'s</span> brother is an animator.<br>→「〜の」という所有関係 → <span class="tag tag-red">所有格</span> whose を使う'},
+  {num:"STEP 3　〈whose＋名詞〉をセットで前に出す",
+   body:'<span class="hl-red strike">The friend\'s</span> → <span class="hl-green">whose</span><br>→ <span class="hl-green">whose brother</span> is an animator.'},
+  {num:"STEP 4　完成",
+   body:'I have a <span class="hl-blue">friend</span> <span class="hl-green">whose brother is an animator</span>.'},
+ ],
+ exp:{
+  role:"所有格",
+  points:[
+   {title:"whoseは〈whose＋名詞〉がセット",text:"whoseの後には必ず名詞が続く。「whose＋名詞」でひとかたまりとして節の先頭に出る。",code:"whose brother（友人の兄）← 'sをwhoseに替えたイメージ"},
+   {title:"所有格は省略できない",text:"whoseは所有関係を示す唯一の形。省略すると意味が成立しないため、省略不可。"},
+   {title:"後ろは完全な文",text:"whose brotherが主語の役割を果たすので、後ろは「is an animator」と完全な文が続く。"},
+  ]
+ }
+},
+{id:207,type:"which/that（主格・物）",
+ ja:'<span class="hl-blue">これが</span><span class="hl-red">先週オープンした</span><span class="hl-blue">カフェです。</span>',
+ jaPlain:"これが先週オープンしたカフェです。",
+ words:["This","is","the","cafe","which","opened","last","week"],
+ answer:"This is the cafe which opened last week.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">This is the cafe.</span><br>文B: <span class="hl-red">The cafe opened last week.</span>'},
+  {num:"STEP 2　先行詞を確認する",
+   body:'共通: <u>the cafe</u>（物）→ <span class="hl-green">which</span> または that を使う'},
+  {num:"STEP 3　文Bの先行詞を関係代名詞に置き換える",
+   body:'<span class="hl-red strike">The cafe</span> → <span class="hl-green">which</span><br>文B: <span class="hl-green">which</span> opened last week.（主語の位置 → <span class="tag tag-blue">主格</span>）'},
+  {num:"STEP 4　完成",
+   body:'This is the <span class="hl-blue">cafe</span> <span class="hl-green">which opened last week</span>.'},
+ ],
+ exp:{
+  role:"主格",
+  points:[
+   {title:"物が先行詞のときはwhich/that",text:"先行詞がthe cafe（物・場所）なので、whoではなくwhichまたはthatを使う。"},
+   {title:"主格の確認",text:"which opened last weekの「opened」は動詞。whichが節の主語になっている＝主格。後ろは主語が欠落した不完全な文。"},
+   {title:"whichとthatの使い分け",text:"意味は同じ。ただし非制限用法（コンマあり）ではwhichのみ使える。制限用法ではどちらでも可。"},
+   {title:"別解",text:"制限用法なのでthatも使える。",code:"This is the cafe that opened last week."},
+  ]
+ }
+},
+{id:208,type:"which/that（目的格・物）",
+ ja:'<span class="hl-blue">これは</span><span class="hl-red">祖父母が私に送ってくれた</span><span class="hl-blue">贈り物です。</span>',
+ jaPlain:"これは祖父母が私に送ってくれた贈り物です。",
+ words:["This","is","the","gift","which","my","grandparents","sent","to","me"],
+ answer:"This is the gift which my grandparents sent to me.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">This is the gift.</span><br>文B: <span class="hl-red">My grandparents sent the gift to me.</span>'},
+  {num:"STEP 2　文Bで先行詞はどこか",
+   body:'文B: My grandparents sent <u>the gift</u> to me.<br>→ sentの<strong>目的語</strong>の位置 → <span class="tag tag-red">目的格</span>'},
+  {num:"STEP 3　文Bの先行詞を関係代名詞に置き換える",
+   body:'<span class="hl-red strike">the gift</span> → <span class="hl-green">which</span>（物が先行詞 → which）<br>→ <span class="hl-green">which</span> my grandparents sent to me'},
+  {num:"STEP 4　完成",
+   body:'This is the <span class="hl-blue">gift</span> <span class="hl-green">which</span> my grandparents sent to me.'},
+ ],
+ exp:{
+  role:"目的格",
+  points:[
+   {title:"目的格の見分け方",text:"関係代名詞の後ろを見ると「my grandparents sent ___ to me」と目的語が欠落した不完全な文。この___に先行詞が入るイメージ。"},
+   {title:"目的格とは",text:"関係代名詞が節の中で動詞の目的語になっている形。主格（主語）と区別して意識しよう。"},
+   {title:"to meの位置",text:"sentの後にtoが残っているのは、元々「sent the gift to me」のgiftがwhichになって前に出たから。前置詞toはそのまま残る。"},
+   {title:"別解",text:"thatも使える。また目的格なので省略も可能だが、まず関係代名詞ありの形を身につけよう。",code:"This is the gift that my grandparents sent to me."},
+  ]
+ }
+},
+{id:209,type:"whose（所有格・物）",
+ ja:'<span class="hl-blue">彼らは</span><span class="hl-red">その歴史が奈良時代にまでさかのぼる</span><span class="hl-blue">町に住んでいます。</span>',
+ jaPlain:"彼らはその歴史が奈良時代にまでさかのぼる町に住んでいます。",
+ words:["They","live","in","a","town","whose","history","goes","back","to","the","Nara","era"],
+ answer:"They live in a town whose history goes back to the Nara era.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">They live in a town.</span><br>文B: <span class="hl-red">The town\'s history goes back to the Nara era.</span>'},
+  {num:"STEP 2　所有関係を確認",
+   body:'文B: <span class="hl-red">The town\'s</span> history → 「〜の」→ <span class="tag tag-red">所有格</span> whose<br>※先行詞が物（town）でもwhoseを使う'},
+  {num:"STEP 3　〈whose＋名詞〉で置き換え",
+   body:'<span class="hl-green">whose history</span> goes back to the Nara era.'},
+  {num:"STEP 4　完成",
+   body:'They live in a <span class="hl-blue">town</span> <span class="hl-green">whose history goes back to the Nara era</span>.'},
+ ],
+ exp:{
+  role:"所有格",
+  points:[
+   {title:"whoseは人以外にも使える",text:"whoseは人が先行詞のイメージが強いが、物・場所・概念が先行詞でも使える。「〜の」という所有関係があればwhoseを使う。"},
+   {title:"of whichとの書き換え",text:"先行詞が人以外の場合、〈whose＋名詞〉は〈the 名詞＋of which〉に書き換え可能。",code:"a town the history of which goes back to the Nara era（同じ意味）"},
+  ]
+ }
+},
+{id:210,type:"that（限定用法）",
+ ja:'<span class="hl-blue">これは唯一の部屋です。</span><span class="hl-red">今使える</span><span class="hl-blue">。</span>',
+ jaPlain:"これは今使える唯一の部屋です。",
+ words:["This","is","the","only","room","that","can","be","used","now"],
+ answer:"This is the only room that can be used now.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">This is the only room.</span><br>文B: <span class="hl-red">The room can be used now.</span>'},
+  {num:"STEP 2　先行詞にthe onlyがついている",
+   body:'先行詞: the <strong>only</strong> room → <span class="hl-green">that</span> を使う'},
+  {num:"STEP 3　完成",
+   body:'This is the only <span class="hl-blue">room</span> <span class="hl-green">that can be used now</span>.'},
+ ],
+ exp:{
+  role:"主格（that限定）",
+  points:[
+   {title:"thatを使わなければならない場合①",text:"先行詞にthe only・the first・最上級などがついているとき、関係代名詞はthatを使うのが原則。"},
+   {title:"thatを使う場面まとめ",text:"① the only / the first / 最上級の後　② 先行詞が「人＋動物」や「人＋物」の組み合わせ　③ 先行詞が疑問詞のとき（Who that...は避けるため）",code:"the only room that...（× the only room which）"},
+   {title:"非制限用法ではthatは使えない",text:"コンマ付きの非制限用法ではthatは使えない。この文は制限用法なのでthatが使える。"},
+  ]
+ }
+},
+{id:211,type:"that（all等の後・目的格）",
+ ja:'<span class="hl-blue">私は本をすべて買いました。</span><span class="hl-red">あなたが推薦してくれた</span><span class="hl-blue">。</span>',
+ jaPlain:"私はあなたが推薦してくれた本はすべて買いました。",
+ words:["I","bought","all","the","books","that","you","had","recommended"],
+ answer:"I bought all the books that you had recommended.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">I bought all the books.</span><br>文B: <span class="hl-red">You had recommended the books.</span>'},
+  {num:"STEP 2　先行詞にallがついている＋目的格",
+   body:'先行詞: <strong>all</strong> the books → thatが自然<br>文Bで the books は recommendedの目的語 → <span class="tag tag-red">目的格</span>（省略可）'},
+  {num:"STEP 3　完成",
+   body:'I bought all the <span class="hl-blue">books</span> <span class="hl-green">that</span> you had recommended.'},
+ ],
+ exp:{
+  role:"目的格",
+  points:[
+   {title:"allの後はthatが自然",text:"all / every / any / no などの不定代名詞が先行詞にかかるとき、thatが好まれる。"},
+   {title:"過去完了に注目",text:"had recommendedは過去完了。「買う（bought）」より前に「推薦していた」という時間関係を示している。"},
+   {title:"別解",text:"whichも使える。また目的格なので省略も可能だが、まず関係代名詞ありの形を身につけよう。",code:"I bought all the books which you had recommended."},
+  ]
+ }
+},
+{id:212,type:"前置詞＋which",
+ ja:'<span class="hl-blue">あれは教会です。</span><span class="hl-red">姉の結婚式が開かれた</span><span class="hl-blue">。</span>',
+ jaPlain:"あれが姉の結婚式が開かれた教会です。",
+ words:["That","is","the","church","which","my","sister's","wedding","was","held","at"],
+ answer:"That is the church which my sister's wedding was held at.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">That is the church.</span><br>文B: <span class="hl-red">My sister\'s wedding was held at the church.</span>'},
+  {num:"STEP 2　前置詞の位置を確認する",
+   body:'文B: was held <u>at</u> the church.<br>→ 「at the church」のatに注目'},
+  {num:"STEP 3　文Bの先行詞を関係代名詞に置き換える",
+   body:'<span class="hl-red strike">the church</span> → <span class="hl-green">which</span>（物が先行詞 → which）<br>文B: which my sister\'s wedding was held <span class="hl-green">at</span>（前置詞はそのまま残る）'},
+  {num:"STEP 4　完成",
+   body:'That is the <span class="hl-blue">church</span> <span class="hl-green">which my sister\'s wedding was held at</span>.'},
+ ],
+ exp:{
+  role:"前置詞＋which",
+  points:[
+   {title:"前置詞を後ろに残す形",text:"whichを先行詞の直後に置き、前置詞atは元の位置のまま文末に残す形。口語的でよく使われる。"},
+   {title:"前置詞＋thatはNG",text:"〈前置詞＋that〉の形は使えない。前置詞を前に置くときは必ずwhich（またはwhom）を使う。",code:"× at that（不可）　○ at which（可）"},
+   {title:"別解①　前置詞＋which（フォーマル）",text:"前置詞atをwhichの前に出す形。文語的・フォーマルな表現。前置詞＋thatはNG。",code:"That is the church at which my sister's wedding was held."},
+   {title:"別解②　whereに書き換え",text:"場所が先行詞なのでwhereに書き換えることもできる。",code:"That is the church where my sister's wedding was held."},
+  ]
+ }
+},
+{id:213,type:"what（先行詞を含む）",
+ ja:'<span class="hl-blue">大切な</span><span class="hl-red">こと</span><span class="hl-blue">は、正直であることだ。</span>',
+ jaPlain:"大切なことは、正直であることだ。",
+ words:["What","is","important","is","to","be","honest"],
+ answer:"What is important is to be honest.",
+ steps:[
+  {num:"STEP 1　whatの意味を確認",
+   body:'what = <span class="hl-green">the thing which</span>（〜すること・もの）<br>先行詞を含む関係代名詞'},
+  {num:"STEP 2　文の構造を確認",
+   body:'<span class="hl-green">What is important</span> = S（主語）<br>is = V　　to be honest = C（補語）'},
+  {num:"STEP 3　完成",
+   body:'<span class="hl-green">What is important</span> is to be honest.<br>（大切な<strong>こと</strong>は、正直であることだ）'},
+ ],
+ exp:{
+  role:"whatの主語用法",
+  points:[
+   {title:"whatは先行詞を含む",text:"what = the thing which。先行詞（the thing）と関係代名詞（which）の2つがwhat1語に凝縮されている。",code:"What is important = The thing which is important"},
+   {title:"後ろは不完全な文",text:"what is importantの「is important」はisの主語が欠落した不完全な文。whatがその主語になっている。"},
+   {title:"whatは名詞節を作る",text:"what節全体が文の主語・目的語・補語になれる。この文ではWhat is importantが主語。"},
+  ]
+ }
+},
+{id:214,type:"what（目的語）",
+ ja:'<span class="hl-blue">まずやるべきです。</span><span class="hl-red">あなたがやりたいことを</span><span class="hl-blue">。</span>',
+ jaPlain:"あなたがやりたいことを、まずやるべきです。",
+ words:["You","should","do","what","you","want","to","do","first"],
+ answer:"You should do what you want to do first.",
+ steps:[
+  {num:"STEP 1　whatを展開する",
+   body:'what you want to do<br>= <span class="hl-green">the thing which</span> you want to do'},
+  {num:"STEP 2　文の構造を確認",
+   body:'You should do <span class="hl-green">what you want to do</span> first.<br>doの<strong>目的語</strong>がwhat節'},
+  {num:"STEP 3　完成",
+   body:'You should do <span class="hl-green">what you want to do</span> first.'},
+ ],
+ exp:{
+  role:"whatの目的語用法",
+  points:[
+   {title:"what節が動詞の目的語になる",text:"「do＋目的語」のdoの目的語にwhat節全体が入っている形。",code:"do [what you want to do]（[]内が目的語）"},
+   {title:"節の中も不完全な文",text:"what you want to do → want to doの目的語（to doする対象）が欠落している。その欠けた部分にwhatが対応している。"},
+  ]
+ }
+},
+{id:215,type:"what is more（慣用）",
+ ja:'<span class="hl-blue">自転車に乗ることは健康的で、</span><span class="hl-red">そのうえ</span><span class="hl-blue">環境に優しい。</span>',
+ jaPlain:"自転車に乗ることは健康的で、そのうえ環境に優しい。",
+ words:["Riding","a","bike","is","healthy,","and","what","is","more,","it","is","eco-friendly"],
+ answer:"Riding a bike is healthy, and what is more, it is eco-friendly.",
+ steps:[
+  {num:"STEP 1　what is moreの意味",
+   body:'<span class="hl-green">what is more</span> =「さらに・おまけに」<br>情報を付け加えるときの慣用表現'},
+  {num:"STEP 2　文の構造",
+   body:'文A: Riding a bike is healthy.<br>→ and <span class="hl-green">what is more</span>, it is eco-friendly.（追加情報）'},
+ ],
+ exp:{
+  role:"whatの慣用表現",
+  points:[
+   {title:"what is more＝「さらに」",text:"what is moreは接続副詞的に使う慣用表現。前の内容に情報を追加するときに使う。"},
+   {title:"同類の表現",text:"what is worse（さらに悪いことに）/ what is better（さらに良いことに）なども同じ構造。"},
+  ]
+ }
+},
+{id:216,type:"what is called（慣用）",
+ ja:'<span class="hl-blue">これは</span><span class="hl-red">いわゆる</span><span class="hl-blue">ジェネレーション・ギャップだ。</span>',
+ jaPlain:"これはいわゆるジェネレーション・ギャップだ。",
+ words:["This","is","what","is","called","a","generation","gap"],
+ answer:"This is what is called a generation gap.",
+ steps:[
+  {num:"STEP 1　what is calledを分解する",
+   body:'what is called = 「一般的に〜と呼ばれるもの」<br>= <span class="hl-green">いわゆる</span>（慣用表現）'},
+  {num:"STEP 2　文の構造",
+   body:'This is <span class="hl-green">what is called</span> a generation gap.<br>what節が補語（C）になっている'},
+ ],
+ exp:{
+  role:"whatの慣用表現",
+  points:[
+   {title:"what is called＝「いわゆる」",text:"what is called / what we callは「一般に〜と呼ばれているもの」を表す慣用表現。丸ごと覚える。",code:"what is called a generation gap\n= what we call a generation gap（同じ意味）"},
+   {title:"what節が補語になる",text:"This is [what is called a generation gap].　→ This = what is called a generation gap という補語の関係。"},
+  ]
+ }
+},
+{id:217,type:"what（比較・慣用）",
+ ja:'<span class="hl-blue">その駅は</span><span class="hl-red">10年前の姿</span><span class="hl-blue">とは違う。</span>',
+ jaPlain:"その駅は10年前の（姿）とは違う。",
+ words:["The","station","is","not","what","it","was","ten","years","ago"],
+ answer:"The station is not what it was ten years ago.",
+ steps:[
+  {num:"STEP 1　what it wasを確認",
+   body:'<span class="hl-green">what it was</span> =「かつての（それ）の姿」<br>= the thing which it was'},
+  {num:"STEP 2　文の構造",
+   body:'The station is not <span class="hl-green">what it was</span> ten years ago.<br>→「駅は10年前の姿ではない」'},
+ ],
+ exp:{
+  role:"whatの慣用表現",
+  points:[
+   {title:"not what A was＝「以前のAではない」",text:"what A wasは「AがかつてあったもE」つまり「昔の姿・状態」を表す。not what it wasで「以前とは違う」という意味になる。"},
+   {title:"ten years agoは副詞句",text:"ten years agoはwhat it wasを修飾する副詞句。「10年前の姿」というニュアンスを加えている。"},
+  ]
+ }
+},
+{id:218,type:"who（限定用法・コンマなし）",
+ ja:'<span class="hl-blue">村上先生には娘がいます。</span><span class="hl-red">バイオリン奏者である</span><span class="hl-blue">。</span>',
+ jaPlain:"村上先生には、バイオリン奏者である娘がいます。",
+ words:["Mr.","Murakami","has","a","daughter","who","is","a","violinist"],
+ answer:"Mr. Murakami has a daughter who is a violinist.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">Mr. Murakami has a daughter.</span><br>文B: <span class="hl-red">She is a violinist.</span>'},
+  {num:"STEP 2　コンマなし＝限定用法",
+   body:'who以下が「どの娘か」を<strong>絞り込む</strong>役割<br>→ 娘が複数いる可能性を示す'},
+  {num:"STEP 3　完成",
+   body:'Mr. Murakami has a <span class="hl-blue">daughter</span> <span class="hl-green">who is a violinist</span>.'},
+ ],
+ exp:{
+  role:"限定用法（コンマなし）",
+  points:[
+   {title:"限定用法とは",text:"関係詞節が先行詞を「絞り込む・特定する」用法。コンマを置かない。複数の可能性がある中から1つを特定するイメージ。"},
+   {title:"219番との違い",text:"コンマなし（218）→ 娘が複数いる前提で、バイオリン奏者の娘を特定。コンマあり（219）→ 娘は1人しかおらず、その人がバイオリン奏者という補足情報。"},
+  ]
+ }
+},
+{id:219,type:"who（非限定用法・コンマあり）",
+ ja:'<span class="hl-blue">村上先生には娘がいます、</span><span class="hl-red">（その人はバイオリン奏者）</span><span class="hl-blue">。</span>',
+ jaPlain:"村上先生には娘がいて、その人はバイオリン奏者です。",
+ words:["Mr.","Murakami","has","a","daughter,","who","is","a","violinist"],
+ answer:"Mr. Murakami has a daughter, who is a violinist.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">Mr. Murakami has a daughter.</span><br>文B: <span class="hl-red">She is a violinist.</span>'},
+  {num:"STEP 2　コンマあり＝非限定用法",
+   body:'娘は1人（確定）→ 絞り込む必要がない<br>コンマ＋whoで<strong>補足情報を追加</strong>する'},
+  {num:"STEP 3　完成",
+   body:'Mr. Murakami has a <span class="hl-blue">daughter,</span> <span class="hl-green">who is a violinist</span>.'},
+ ],
+ exp:{
+  role:"非限定用法（コンマあり）",
+  points:[
+   {title:"非限定用法とは",text:"先行詞についての補足情報を追加する用法。コンマを置く。先行詞はすでに特定されているので「絞り込み」ではなく「付け足し」のニュアンス。"},
+   {title:"非制限用法の重要ルール",text:"① コンマ＋who/whichを使う（thatは不可）　② 目的格でも省略不可　③ 訳すとき「そして〜」「しかし〜」「なぜなら〜」など文脈に応じて訳す。"},
+   {title:"コンマの有無で意味が変わる",text:"Mr. Murakami has a daughter who is a violinist.（複数の娘あり）\nMr. Murakami has a daughter, who is a violinist.（娘は1人）"},
+  ]
+ }
+},
+{id:220,type:"which（節全体を受ける）",
+ ja:'<span class="hl-blue">私はタクミに追いつこうとしましたが、</span><span class="hl-red">それは不可能でした。</span>',
+ jaPlain:"私はタクミに追いつこうとしたが、それは不可能だった。",
+ words:["I","tried","to","catch","up","with","Takumi,","which","was","impossible"],
+ answer:"I tried to catch up with Takumi, which was impossible.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">I tried to catch up with Takumi.</span><br>文B: <span class="hl-red">It was impossible.</span>'},
+  {num:"STEP 2　コンマ＋which＝前の節全体を受ける",
+   body:'It（文A全体のこと）→ <span class="hl-green">which</span><br>→「追いつこうとしたこと」が不可能だった'},
+  {num:"STEP 3　完成",
+   body:'I tried to catch up with Takumi, <span class="hl-green">which was impossible</span>.'},
+ ],
+ exp:{
+  role:"非限定用法（節全体を受ける）",
+  points:[
+   {title:"コンマ＋whichが前の文全体を受ける",text:"whichの先行詞が直前の名詞ではなく、前の節（文）全体になる用法。「そのことは〜」と訳す。"},
+   {title:"thatに置き換えは不可",text:"この用法はコンマあり非限定用法なのでthatは使えない。whichのみ。"},
+   {title:"221番と比較",text:"220: 前の動詞句を先行詞とする場合\n221: 前の文全体を先行詞とする場合　両方「コンマ＋which」で対応可。"},
+  ]
+ }
+},
+{id:221,type:"which（文全体を受ける）",
+ ja:'<span class="hl-blue">ユカは突然クラブをやめました、</span><span class="hl-red">それにはみんなが驚いた。</span>',
+ jaPlain:"ユカは突然クラブをやめたが、それにはみんなが驚いた。",
+ words:["Yuka","quit","the","club","suddenly,","which","surprised","everyone"],
+ answer:"Yuka quit the club suddenly, which surprised everyone.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">Yuka quit the club suddenly.</span><br>文B: <span class="hl-red">That surprised everyone.</span>'},
+  {num:"STEP 2　Thatが文A全体を受けている",
+   body:'That（文A全体）→ <span class="hl-green">which</span><br>コンマ＋whichで前の文全体を受ける'},
+  {num:"STEP 3　完成",
+   body:'Yuka quit the club suddenly, <span class="hl-green">which surprised everyone</span>.'},
+ ],
+ exp:{
+  role:"非限定用法（文全体を受ける）",
+  points:[
+   {title:"前の文全体が先行詞",text:"「ユカが突然やめたこと」全体をwhichが受けている。日本語では「それが〜」「そのことが〜」と訳す。"},
+   {title:"surprisedの主語はwhich",text:"which surprised everyoneの主語はwhich（＝ユカが突然やめたという事実）。"},
+  ]
+ }
+},
+{id:222,type:"when（関係副詞）",
+ ja:'<span class="hl-blue">私は日を楽しみにしています。</span><span class="hl-red">私たちみんなが月へ旅行できる</span><span class="hl-blue">。</span>',
+ jaPlain:"私は私たちみんなが月へ旅行できる日を楽しみにしています。",
+ words:["I'm","looking","forward","to","the","day","when","we","can","all","travel","to","the","moon"],
+ answer:"I'm looking forward to the day when we can all travel to the moon.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">I\'m looking forward to the day.</span><br>文B: <span class="hl-red">We can all travel to the moon on the day.</span>'},
+  {num:"STEP 2　前置詞＋先行詞に注目",
+   body:'on the day（時を表す）→ on which = <span class="hl-green">when</span><br>先行詞: the day（時）'},
+  {num:"STEP 3　完成",
+   body:'I\'m looking forward to the <span class="hl-blue">day</span> <span class="hl-green">when we can all travel to the moon</span>.'},
+ ],
+ exp:{
+  role:"関係副詞when",
+  points:[
+   {title:"関係副詞whenとは",text:"先行詞が時を表す語（day / time / year / momentなど）のとき、on which / at whichなどの代わりにwhenを使う。"},
+   {title:"後ろは完全な文",text:"関係副詞の後ろは主語・目的語が欠落していない完全な文が続く。これが関係代名詞（後ろが不完全）との最大の違い。",code:"the day when we can all travel（完全な文）\nthe day which we all remember（whichは目的語が欠落→不完全）"},
+   {title:"書き換え",text:"when = on which（時を表す場合）",code:"the day on which we can travel（書き換え形）"},
+  ]
+ }
+},
+{id:223,type:"where（関係副詞）",
+ ja:'<span class="hl-blue">部屋がほしい。</span><span class="hl-red">夜でもトランペットの練習ができる</span><span class="hl-blue">。</span>',
+ jaPlain:"（私が）夜でもトランペットの練習ができる部屋がほしい。",
+ words:["I","want","a","room","where","I","can","practice","the","trumpet","even","at","night"],
+ answer:"I want a room where I can practice the trumpet even at night.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">I want a room.</span><br>文B: <span class="hl-red">I can practice the trumpet in the room even at night.</span>'},
+  {num:"STEP 2　前置詞＋先行詞に注目",
+   body:'in the room（場所）→ in which = <span class="hl-green">where</span><br>先行詞: a room（場所）'},
+  {num:"STEP 3　完成",
+   body:'I want a <span class="hl-blue">room</span> <span class="hl-green">where I can practice the trumpet even at night</span>.'},
+ ],
+ exp:{
+  role:"関係副詞where",
+  points:[
+   {title:"関係副詞whereとは",text:"先行詞が場所を表す語（room / place / city / houseなど）のとき、in which / at whichなどの代わりにwhereを使う。"},
+   {title:"whereとwhichの使い分け",text:"後ろが完全な文ならwhere。後ろに目的語欠落の不完全な文ならwhich。",code:"a room where I can practice（完全 → where）\na room which I like（I like ___ 目的語欠落 → which）"},
+  ]
+ }
+},
+{id:224,type:"why（関係副詞）",
+ ja:'<span class="hl-blue">理由を教えてください。</span><span class="hl-red">あなたがメキシコに住みたい</span><span class="hl-blue">。</span>',
+ jaPlain:"あなたがメキシコに住みたい理由を教えてください。",
+ words:["Please","tell","me","the","reason","why","you","want","to","live","in","Mexico"],
+ answer:"Please tell me the reason why you want to live in Mexico.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">Please tell me the reason.</span><br>文B: <span class="hl-red">You want to live in Mexico for the reason.</span>'},
+  {num:"STEP 2　for whichをwhyに",
+   body:'for the reason → for which = <span class="hl-green">why</span><br>先行詞: the reason（理由）→ 省略も可'},
+  {num:"STEP 3　完成",
+   body:'Please tell me <span class="hl-blue">the reason</span> <span class="hl-green">why you want to live in Mexico</span>.'},
+ ],
+ exp:{
+  role:"関係副詞why",
+  points:[
+   {title:"関係副詞whyとは",text:"先行詞がthe reason（理由）のとき、for whichの代わりにwhyを使う。"},
+   {title:"the reasonは省略可",text:"why節がある場合、先行詞のthe reasonは省略できる（カッコ表記の理由）。",code:"Please tell me why you want to live in Mexico.（省略形）"},
+  ]
+ }
+},
+{id:225,type:"how（関係副詞）",
+ ja:'<span class="hl-blue">彼は東京まで飛行機に乗りました。</span><span class="hl-red">そうやって</span><span class="hl-blue">、彼はここに間に合って着いたのです。</span>',
+ jaPlain:"彼は東京まで飛行機に乗りました。そうやって、彼はここに間に合って着いたのです。",
+ words:["He","took","the","plane","to","Tokyo.","That's","how","he","got","here","in","time"],
+ answer:"He took the plane to Tokyo. That's how he got here in time.",
+ steps:[
+  {num:"STEP 1　That's howの意味",
+   body:'That\'s <span class="hl-green">how</span> ～ = 「そうやって〜した・そういう方法で」<br>先行詞 the way が省略された形'},
+  {num:"STEP 2　文の構造",
+   body:'That\'s <span class="hl-green">how he got here in time</span>.<br>= That\'s the way in which he got here in time.'},
+ ],
+ exp:{
+  role:"関係副詞how",
+  points:[
+   {title:"howとthe wayは併用不可",text:"the way howという形は現代英語では使えない。the way / the way that / the way in which / howのどれか1つを使う。",code:"× the way how（不可）\n○ That's how / the way he got here（可）"},
+   {title:"That's how〜＝「そういうわけで〜」",text:"That's why〜（だからこそ〜）との区別も重要。howは方法、whyは理由。"},
+  ]
+ }
+},
+{id:226,type:"when（補語用法）",
+ ja:'<span class="hl-blue">4月は</span><span class="hl-red">日本で学年が始まる</span><span class="hl-blue">月です。</span>',
+ jaPlain:"4月は日本で学年が始まる月[時期]です。",
+ words:["April","is","when","the","school","year","starts","in","Japan"],
+ answer:"April is when the school year starts in Japan.",
+ steps:[
+  {num:"STEP 1　whenが補語になる形",
+   body:'April is <span class="hl-green">when the school year starts in Japan</span>.<br>= April is the time when ...（先行詞が省略された形）'},
+  {num:"STEP 2　文の構造",
+   body:'April = S　is = V　when節 = C（補語）<br>April = when節（Aprilを説明している）'},
+ ],
+ exp:{
+  role:"関係副詞whenの補語用法",
+  points:[
+   {title:"when節が補語になれる",text:"April is [when the school year starts].　→ when節全体がbe動詞の後の補語（C）になる形。"},
+   {title:"先行詞が省略されている",text:"April is [the time] when ...のthe timeが省略されたと考えるとわかりやすい。"},
+  ]
+ }
+},
+{id:227,type:"where（補語用法）",
+ ja:'<span class="hl-blue">あれは場所です。</span><span class="hl-red">新しい駅が建設される</span><span class="hl-blue">。</span>',
+ jaPlain:"あれが新しい駅が建設される場所です。",
+ words:["That","is","where","the","new","station","will","be","built"],
+ answer:"That is where the new station will be built.",
+ steps:[
+  {num:"STEP 1　whereが補語になる形",
+   body:'That is <span class="hl-green">where the new station will be built</span>.<br>= That is the place where ...（先行詞省略）'},
+  {num:"STEP 2　文の構造",
+   body:'That = S　is = V　where節 = C（補語）'},
+ ],
+ exp:{
+  role:"関係副詞whereの補語用法",
+  points:[
+   {title:"where節が補語になれる",text:"That is [where the new station will be built].　→ where節全体が補語になる形。the placeが省略されていると考える。"},
+  ]
+ }
+},
+{id:228,type:"why（補語用法）",
+ ja:'<span class="hl-blue">私は寝過ごした。</span><span class="hl-red">そういうわけで</span><span class="hl-blue">、私は約束に遅れた。</span>',
+ jaPlain:"私は寝過ごした。それが、私が約束に遅れた理由です。",
+ words:["I","overslept.","That's","why","I","was","late","for","the","appointment"],
+ answer:"I overslept. That's why I was late for the appointment.",
+ steps:[
+  {num:"STEP 1　That's whyの意味",
+   body:'That\'s <span class="hl-green">why</span> ～ = 「だから〜・そういうわけで〜」<br>先行詞 the reason が省略された形'},
+  {num:"STEP 2　文の構造",
+   body:'That\'s <span class="hl-green">why I was late for the appointment</span>.<br>= That\'s the reason why I was late.'},
+ ],
+ exp:{
+  role:"関係副詞whyの慣用",
+  points:[
+   {title:"That's why〜＝「だから〜」",text:"That's why〜は英語で最頻出の表現の1つ。前の文の内容を「理由」として受け、その結果を述べる。",code:"I overslept. That's why I was late.（寝過ごした→だから遅れた）"},
+   {title:"That's because〜との違い",text:"That's why〜（だからこそ〜）→ 原因から結果へ\nThat's because〜（なぜならば〜）→ 結果から原因へ",code:"I was late. That's because I overslept.（遅れた←なぜなら寝過ごしたから）"},
+  ]
+ }
+},
+{id:229,type:"when（継続用法）",
+ ja:'<span class="hl-blue">私は1998年に生まれた。</span><span class="hl-red">その年に長野オリンピックが開催された。</span>',
+ jaPlain:"私は1998年に生まれたが、その年に長野オリンピックが開催された。",
+ words:["I","was","born","in","1998,","when","the","Nagano","Olympics","were","held"],
+ answer:"I was born in 1998, when the Nagano Olympics were held.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">I was born in 1998.</span><br>文B: <span class="hl-red">The Nagano Olympics were held then.</span>'},
+  {num:"STEP 2　コンマ＋when＝継続用法",
+   body:'then（そのとき）→ <span class="hl-green">when</span><br>コンマ＋whenで「そのとき〜」と補足'},
+  {num:"STEP 3　完成",
+   body:'I was born in <span class="hl-blue">1998,</span> <span class="hl-green">when the Nagano Olympics were held</span>.'},
+ ],
+ exp:{
+  role:"関係副詞whenの継続用法",
+  points:[
+   {title:"コンマ＋whenで補足情報",text:"コンマ＋whenは「そのとき〜」という補足情報を加える非限定用法。先行詞は1998（年・時）。"},
+  ]
+ }
+},
+{id:230,type:"where（継続用法）",
+ ja:'<span class="hl-blue">彼女は福岡に引っ越した。</span><span class="hl-red">そこで新しい事業を始めた。</span>',
+ jaPlain:"彼女は福岡に引っ越し、そこで新しい事業を始めた。",
+ words:["She","moved","to","Fukuoka,","where","she","started","her","new","business"],
+ answer:"She moved to Fukuoka, where she started her new business.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">She moved to Fukuoka.</span><br>文B: <span class="hl-red">She started her new business there.</span>'},
+  {num:"STEP 2　コンマ＋where＝継続用法",
+   body:'there（そこで）→ <span class="hl-green">where</span><br>先行詞: Fukuoka（場所）'},
+  {num:"STEP 3　完成",
+   body:'She moved to <span class="hl-blue">Fukuoka,</span> <span class="hl-green">where she started her new business</span>.'},
+ ],
+ exp:{
+  role:"関係副詞whereの継続用法",
+  points:[
+   {title:"コンマ＋whereで場所の補足",text:"コンマ＋whereは「そこで/そこに〜」という補足情報を加える。先行詞はFukuoka（地名）。"},
+  ]
+ }
+},
+{id:231,type:"whoever（複合関係代名詞・名詞節）",
+ ja:'<span class="hl-red">ぼくらのサッカーチームに入りたい人は</span><span class="hl-blue">だれでも、歓迎します。</span>',
+ jaPlain:"ぼくらのサッカーチームに入りたい人はだれでも、歓迎します。",
+ words:["Whoever","wants","to","join","our","soccer","team","will","be","welcome"],
+ answer:"Whoever wants to join our soccer team will be welcome.",
+ steps:[
+  {num:"STEP 1　whoeverを分解する",
+   body:'<span class="hl-green">Whoever</span> = anyone who<br>「〜する人は誰でも」'},
+  {num:"STEP 2　文の構造",
+   body:'<span class="hl-green">Whoever wants to join our soccer team</span> = S（主語）<br>will be welcome = V＋C'},
+ ],
+ exp:{
+  role:"複合関係代名詞whoever",
+  points:[
+   {title:"whoever＝anyone who",text:"whoeverはwho＋everで「誰でも〜する人」。名詞節として文の主語・目的語になれる。",code:"Whoever wants to join = Anyone who wants to join"},
+   {title:"節の中は主格",text:"whoever wants to join → wantsの主語がwhoever。主格として使われている。"},
+   {title:"233番との違い",text:"231: whoever節が文の主語（名詞節用法）\n233: whoever節が副詞節（譲歩用法）→「誰が〜しても」"},
+  ]
+ }
+},
+{id:232,type:"whatever（複合関係代名詞）",
+ ja:'<span class="hl-blue">メグはやり遂げます。</span><span class="hl-red">自分がやると決めたことは何でも</span><span class="hl-blue">。</span>',
+ jaPlain:"メグは自分がやると決めたことは何でも、やり遂げます。",
+ words:["Meg","accomplishes","whatever","she","decides","to","do"],
+ answer:"Meg accomplishes whatever she decides to do.",
+ steps:[
+  {num:"STEP 1　whateverを分解する",
+   body:'<span class="hl-green">whatever</span> = anything that<br>「〜するものは何でも」'},
+  {num:"STEP 2　文の構造",
+   body:'Meg accomplishes <span class="hl-green">whatever she decides to do</span>.<br>accomplishesの目的語がwhatever節'},
+ ],
+ exp:{
+  role:"複合関係代名詞whatever",
+  points:[
+   {title:"whatever＝anything that",text:"whateverはwhat＋everで「何でも〜するもの」。名詞節として動詞の目的語になれる。",code:"whatever she decides to do = anything that she decides to do"},
+  ]
+ }
+},
+{id:233,type:"whoever（譲歩）",
+ ja:'<span class="hl-red">だれが私の計画に反対しても、</span><span class="hl-blue">それを変えるつもりはありません。</span>',
+ jaPlain:"だれが私の計画に反対しても、それを変えるつもりはありません。",
+ words:["Whoever","opposes","my","plan,","I","won't","change","it"],
+ answer:"Whoever opposes my plan, I won't change it.",
+ steps:[
+  {num:"STEP 1　whoeverの譲歩用法",
+   body:'<span class="hl-green">Whoever</span> ～, S V... = 「誰が〜しても」<br>コンマで主節と区切る'},
+  {num:"STEP 2　言い換え",
+   body:'= No matter who opposes my plan,<br>I won\'t change it.'},
+ ],
+ exp:{
+  role:"複合関係代名詞whoever（譲歩）",
+  points:[
+   {title:"譲歩のwhoever",text:"Whoever ～, ...＝「誰が〜しても…」。No matter whoに言い換え可能。副詞節として主節を修飾する。",code:"Whoever opposes = No matter who opposes"},
+   {title:"名詞節用法との区別",text:"231番のwhoeverは文の主語（名詞節）。233番のwhoeverはコンマ付きで主節を修飾（副詞節・譲歩）。"},
+  ]
+ }
+},
+{id:234,type:"whatever（譲歩）",
+ ja:'<span class="hl-blue">何をするにしても、</span><span class="hl-red">全力を尽くしなさい。</span>',
+ jaPlain:"何をするにしても、全力を尽くしなさい。",
+ words:["Whatever","you","do,","do","your","best"],
+ answer:"Whatever you do, do your best.",
+ steps:[
+  {num:"STEP 1　whateverの譲歩用法",
+   body:'<span class="hl-green">Whatever</span> you do, ～ = 「何を〜しても」<br>= No matter what you do,'},
+  {num:"STEP 2　完成",
+   body:'<span class="hl-green">Whatever you do,</span> do your best.'},
+ ],
+ exp:{
+  role:"複合関係代名詞whatever（譲歩）",
+  points:[
+   {title:"譲歩のwhatever",text:"Whatever ～, ...＝「何を〜しても…」。No matter whatに言い換え可能。",code:"Whatever you do = No matter what you do"},
+  ]
+ }
+},
+{id:235,type:"whenever（複合関係副詞）",
+ ja:'<span class="hl-red">困ったときはいつでも</span><span class="hl-blue">、私に連絡してください。</span>',
+ jaPlain:"困ったときはいつでも、私に連絡してください。",
+ words:["Contact","me","whenever","you","are","in","trouble"],
+ answer:"Contact me whenever you are in trouble.",
+ steps:[
+  {num:"STEP 1　wheneverの意味",
+   body:'<span class="hl-green">whenever</span> = at any time when<br>「〜するときはいつでも」'},
+  {num:"STEP 2　完成",
+   body:'Contact me <span class="hl-green">whenever you are in trouble</span>.'},
+ ],
+ exp:{
+  role:"複合関係副詞whenever",
+  points:[
+   {title:"whenever＝at any time when",text:"wheneverは「いつ〜しても／〜するときはいつでも」。名詞節・副詞節の両方で使える。"},
+   {title:"237番との違い",text:"235: 「〜するときはいつでも（条件）」\n237: 「いつ〜しても（譲歩）」→コンマ付き",code:"235: Contact me whenever（いつでも連絡して）\n237: Whenever I visit, I feel calm（いつ行っても落ち着く）"},
+  ]
+ }
+},
+{id:236,type:"wherever（複合関係副詞）",
+ ja:'<span class="hl-red">好きなところにどこにでも</span><span class="hl-blue">、座っても構いません。</span>',
+ jaPlain:"好きなところにどこにでも、座っても構いません。",
+ words:["You","may","sit","wherever","you","like"],
+ answer:"You may sit wherever you like.",
+ steps:[
+  {num:"STEP 1　whereverの意味",
+   body:'<span class="hl-green">wherever</span> = anywhere where<br>「〜するところならどこでも」'},
+  {num:"STEP 2　完成",
+   body:'You may sit <span class="hl-green">wherever you like</span>.'},
+ ],
+ exp:{
+  role:"複合関係副詞wherever",
+  points:[
+   {title:"wherever＝anywhere where",text:"whereverは「どこで〜しても／〜するところならどこでも」。副詞節として使う。",code:"wherever you like = anywhere where you like"},
+  ]
+ }
+},
+{id:237,type:"whenever（譲歩）",
+ ja:'<span class="hl-blue">いつこのお寺を訪ねても、</span><span class="hl-red">心が落ち着きます。</span>',
+ jaPlain:"いつこのお寺を訪ねても、心が落ち着きます。",
+ words:["Whenever","I","visit","this","temple,","I","feel","calm"],
+ answer:"Whenever I visit this temple, I feel calm.",
+ steps:[
+  {num:"STEP 1　wheneverの譲歩用法",
+   body:'<span class="hl-green">Whenever</span> ～, S V... = 「いつ〜しても」<br>= No matter when'},
+  {num:"STEP 2　完成",
+   body:'<span class="hl-green">Whenever I visit this temple,</span> I feel calm.'},
+ ],
+ exp:{
+  role:"複合関係副詞whenever（譲歩）",
+  points:[
+   {title:"譲歩のwhenever",text:"Whenever ～, ...＝「いつ〜しても…」。No matter whenに言い換え可能。",code:"Whenever I visit = No matter when I visit"},
+  ]
+ }
+},
+{id:238,type:"wherever（譲歩）",
+ ja:'<span class="hl-blue">どこにいても、</span><span class="hl-red">あなたのことは決して忘れません。</span>',
+ jaPlain:"どこにいても、あなたのことは決して忘れません。",
+ words:["Wherever","I","am,","I","will","never","forget","you"],
+ answer:"Wherever I am, I will never forget you.",
+ steps:[
+  {num:"STEP 1　whereverの譲歩用法",
+   body:'<span class="hl-green">Wherever</span> ～, S V... = 「どこに〜しても」<br>= No matter where'},
+  {num:"STEP 2　完成",
+   body:'<span class="hl-green">Wherever I am,</span> I will never forget you.'},
+ ],
+ exp:{
+  role:"複合関係副詞wherever（譲歩）",
+  points:[
+   {title:"譲歩のwherever",text:"Wherever ～, ...＝「どこにいても…」。No matter whereに言い換え可能。",code:"Wherever I am = No matter where I am"},
+  ]
+ }
+},
+{id:239,type:"however（複合関係副詞）",
+ ja:'<span class="hl-blue">訓練がどんなにつらくても、</span><span class="hl-red">私はあきらめません。</span>',
+ jaPlain:"訓練がどんなにつらくても、私はあきらめません。",
+ words:["However","hard","the","training","is,","I","won't","give","up"],
+ answer:"However hard the training is, I won't give up.",
+ steps:[
+  {num:"STEP 1　however＋形容詞の形",
+   body:'<span class="hl-green">However hard</span> ～ = 「どんなに〜でも」<br>= No matter how hard'},
+  {num:"STEP 2　語順に注意",
+   body:'however の直後に<strong>形容詞/副詞</strong>が来る<br>However <span class="hl-green">hard</span> the training is,...'},
+ ],
+ exp:{
+  role:"複合関係副詞however（譲歩）",
+  points:[
+   {title:"however＋形容詞/副詞",text:"howeverは単独では使えず、直後に形容詞または副詞を置く。「どんなに〜でも」という譲歩。",code:"However hard（どんなに難しくても）\nHowever fast（どんなに速くても）"},
+   {title:"No matter howに言い換え",text:"However hard the training is = No matter how hard the training is",code:"No matter how hard the training is, I won't give up."},
+  ]
+ }
+},
+{id:240,type:"when（先行詞と関係詞節が離れる）",
+ ja:'<span class="hl-blue">日が来るかもしれない。</span><span class="hl-red">空飛ぶ車がありふれた光景になる日が。</span>',
+ jaPlain:"空飛ぶ車がありふれた光景になる日が、近いうちにやってくるかもしれない。",
+ words:["The","time","may","come","soon","when","flying","cars","will","be","a","familiar","sight"],
+ answer:"The time may come soon when flying cars will be a familiar sight.",
+ steps:[
+  {num:"STEP 1　2つの文に分解する",
+   body:'文A: <span class="hl-blue">The time may come soon.</span><br>文B: <span class="hl-red">Flying cars will be a familiar sight at the time.</span>'},
+  {num:"STEP 2　先行詞と関係詞節が離れている",
+   body:'先行詞: The time ← 文の主語<br>→ may come soonの後にwhen節が続く<br>（先行詞と離れていても関係は同じ）'},
+  {num:"STEP 3　完成",
+   body:'The <span class="hl-blue">time</span> may come soon <span class="hl-green">when flying cars will be a familiar sight</span>.'},
+ ],
+ exp:{
+  role:"関係副詞when（先行詞が離れる）",
+  points:[
+   {title:"先行詞と関係詞節が離れることがある",text:"The time may come soonのsoonが挿入されているため、先行詞(The time)と関係詞節(when...)が離れている。先行詞を正確に見極めることが重要。"},
+   {title:"The time will come when〜＝慣用表現",text:"「〜する時が来るだろう」という英語の重要慣用表現。The day will come when〜も同じ構造。",code:"The time will come when you understand this.（いつかわかる日が来る）"},
+  ]
+ }
+},
+];
+
+// ===================== PHASE1 DATA =====================
+// 各問のフェーズ1設問。steps: [{q, opts:[{label,correct,hint}], fb}]
+const PH1 = {
+203:{
+  sentA:'<span class="hl-blue">I have a friend.</span>',
+  sentB:'<span class="hl-red">The friend is good at cooking.</span>',
+  steps:[
+    {q:'文Bの先行詞「The friend」は節の中でどんな役割？',
+     opts:[{l:'主語（S）',c:true},{l:'目的語（O）',c:false},{l:'所有格（〜の）',c:false},{l:'補語（C）',c:false}],
+     ok:'正解！「The friend is...」のThe friendが主語の役割 → 主格',
+     ng:'「The friend is good at cooking.」のThe friendに注目。動詞isの前にある = 主語。'},
+    {q:'先行詞「a friend」は人・物どちら？使う関係代名詞は？',
+     opts:[{l:'who（人・主格）',c:true},{l:'which（物・主格）',c:false},{l:'whose（所有格）',c:false},{l:'that（限定）',c:false}],
+     ok:'正解！人が先行詞で主格 → who（またはthat）',
+     ng:'先行詞はa friend（人）、役割は主格。人+主格 → who を使う。'},
+  ]
+},
+204:{
+  sentA:'<span class="hl-blue">The man was from Hong Kong.</span>',
+  sentB:'<span class="hl-red">The man asked me the way.</span>',
+  steps:[
+    {q:'文Bの先行詞「The man」は節の中でどんな役割？',
+     opts:[{l:'主語（S）',c:true},{l:'目的語（O）',c:false},{l:'所有格（〜の）',c:false},{l:'補語（C）',c:false}],
+     ok:'正解！「The man asked...」のThe manが主語 → 主格',
+     ng:'「The man asked me the way.」のThe manに注目。askedの前 = 主語。'},
+    {q:'先行詞が人・主格 → 使う関係代名詞は？',
+     opts:[{l:'who',c:true},{l:'which',c:false},{l:'whose',c:false},{l:'whom',c:false}],
+     ok:'正解！人+主格 → who（またはthat）',
+     ng:'先行詞は人、節の中で主語 → who を使う。whomは目的格。'},
+  ]
+},
+205:{
+  sentA:'<span class="hl-blue">The writer is Murakami Haruki.</span>',
+  sentB:'<span class="hl-red">I like the writer best.</span>',
+  steps:[
+    {q:'文Bの先行詞「the writer」は節の中でどんな役割？',
+     opts:[{l:'主語（S）',c:false},{l:'目的語（O）',c:true},{l:'所有格（〜の）',c:false},{l:'補語（C）',c:false}],
+     ok:'正解！「I like ___ best」のlikeの目的語 → 目的格',
+     ng:'「I like the writer best.」を見ると、likeの後にthe writerがある = 目的語（O）。'},
+    {q:'先行詞が人・目的格 → 使う関係代名詞は？',
+     opts:[{l:'who(m) / that',c:true},{l:'which',c:false},{l:'whose',c:false},{l:'when',c:false}],
+     ok:'正解！人+目的格 → who(m)またはthat（目的格は省略も可）',
+     ng:'先行詞は人（the writer）、節の中で目的語 → who(m)/that を使う。'},
+  ]
+},
+206:{
+  sentA:'<span class="hl-blue">I have a friend.</span>',
+  sentB:'<span class="hl-red">The friend\'s brother is an animator.</span>',
+  steps:[
+    {q:'文Bの先行詞「The friend\'s」は節の中でどんな役割？',
+     opts:[{l:'主語（S）',c:false},{l:'目的語（O）',c:false},{l:'所有格（〜の）',c:true},{l:'補語（C）',c:false}],
+     ok:'正解！「The friend\'s brother」の\'s = 所有格（〜の）',
+     ng:'The friend\'s brotherの\'sに注目。「友人の兄」という所有関係 = 所有格。'},
+    {q:'所有格の関係代名詞は？',
+     opts:[{l:'who',c:false},{l:'which',c:false},{l:'whose',c:true},{l:'that',c:false}],
+     ok:'正解！所有格には必ずwhoseを使う（人・物どちらも）',
+     ng:'所有格（〜の）を表す関係代名詞はwhoseのみ。who/which/thatでは所有格を表せない。'},
+    {q:'whose の直後に置くのは？',
+     opts:[{l:'whose brother（名詞をセットで）',c:true},{l:'whose is（動詞）',c:false},{l:'whose of（前置詞）',c:false},{l:'whose the（冠詞）',c:false}],
+     ok:'正解！whose＋名詞がセットで節の先頭に出る',
+     ng:'whoseの後には必ず名詞が続く。「whose brother」でひとかたまり。'},
+  ]
+},
+207:{
+  sentA:'<span class="hl-blue">This is the cafe.</span>',
+  sentB:'<span class="hl-red">The cafe opened last week.</span>',
+  steps:[
+    {q:'文Bの先行詞「The cafe」は節の中でどんな役割？',
+     opts:[{l:'主語（S）',c:true},{l:'目的語（O）',c:false},{l:'所有格（〜の）',c:false},{l:'補語（C）',c:false}],
+     ok:'正解！「The cafe opened...」のThe cafeが主語 → 主格',
+     ng:'「The cafe opened last week.」のThe cafeに注目。openedの前 = 主語。'},
+    {q:'先行詞「the cafe」は人・物どちら？使う関係代名詞は？',
+     opts:[{l:'who（人・主格）',c:false},{l:'which（物・主格）',c:true},{l:'whose（所有格）',c:false},{l:'whom（人・目的格）',c:false}],
+     ok:'正解！物が先行詞で主格 → which（またはthat）',
+     ng:'先行詞はthe cafe（物）、役割は主格 → which を使う。whoは人専用。'},
+  ]
+},
+208:{
+  sentA:'<span class="hl-blue">This is the gift.</span>',
+  sentB:'<span class="hl-red">My grandparents sent the gift to me.</span>',
+  steps:[
+    {q:'文Bの先行詞「the gift」は節の中でどんな役割？',
+     opts:[{l:'主語（S）',c:false},{l:'目的語（O）',c:true},{l:'所有格（〜の）',c:false},{l:'補語（C）',c:false}],
+     ok:'正解！「sent ___ to me」のsentの目的語 → 目的格',
+     ng:'「My grandparents sent the gift to me.」のsentの後 = 目的語（O）。'},
+    {q:'先行詞が物・目的格 → 使う関係代名詞は？',
+     opts:[{l:'who',c:false},{l:'which / that',c:true},{l:'whose',c:false},{l:'whom',c:false}],
+     ok:'正解！物+目的格 → which または that',
+     ng:'先行詞は物（the gift）、節の中で目的語 → which/that を使う。'},
+  ]
+},
+209:{
+  sentA:'<span class="hl-blue">They live in a town.</span>',
+  sentB:'<span class="hl-red">The town\'s history goes back to the Nara era.</span>',
+  steps:[
+    {q:'文Bの先行詞「The town\'s」は節の中でどんな役割？',
+     opts:[{l:'主語（S）',c:false},{l:'目的語（O）',c:false},{l:'所有格（〜の）',c:true},{l:'補語（C）',c:false}],
+     ok:'正解！「The town\'s history」の\'s = 所有格（〜の）',
+     ng:'The town\'s historyの\'sに注目 = 「町の歴史」という所有関係。'},
+    {q:'先行詞は物（town）だが所有格 → 使う関係代名詞は？',
+     opts:[{l:'of which',c:false},{l:'which',c:false},{l:'whose',c:true},{l:'that',c:false}],
+     ok:'正解！whoseは物が先行詞でも使える。「whose＋名詞」がセット。',
+     ng:'所有格はwhose。先行詞が物でもwhoseを使える。whose history = the history of which。'},
+  ]
+},
+210:{
+  sentA:'<span class="hl-blue">This is the only room.</span>',
+  sentB:'<span class="hl-red">The room can be used now.</span>',
+  steps:[
+    {q:'先行詞「the only room」にthe onlyがついている。使う関係代名詞は？',
+     opts:[{l:'which',c:false},{l:'who',c:false},{l:'that',c:true},{l:'whose',c:false}],
+     ok:'正解！the only・最上級・the firstなどの後はthatを使う',
+     ng:'先行詞にthe only / the first / 最上級がつく場合はthatが原則。'},
+    {q:'文Bの先行詞「The room」は節の中でどんな役割？',
+     opts:[{l:'主語（S）',c:true},{l:'目的語（O）',c:false},{l:'所有格（〜の）',c:false},{l:'補語（C）',c:false}],
+     ok:'正解！「The room can be used」のThe roomが主語 → 主格',
+     ng:'「The room can be used now.」のThe roomはcan beの主語。'},
+  ]
+},
+211:{
+  sentA:'<span class="hl-blue">I bought all the books.</span>',
+  sentB:'<span class="hl-red">You had recommended the books.</span>',
+  steps:[
+    {q:'先行詞「all the books」にallがついている。使いやすい関係代名詞は？',
+     opts:[{l:'which',c:false},{l:'who',c:false},{l:'that',c:true},{l:'whose',c:false}],
+     ok:'正解！all / every / any / noなどの後はthatが好まれる',
+     ng:'先行詞にall / every / any / noなどがかかるとき → thatが自然。'},
+    {q:'文Bの先行詞「the books」は節の中でどんな役割？',
+     opts:[{l:'主語（S）',c:false},{l:'目的語（O）',c:true},{l:'所有格（〜の）',c:false},{l:'補語（C）',c:false}],
+     ok:'正解！「you had recommended ___」のrecommendedの目的語 → 目的格',
+     ng:'「you had recommended the books」のthe booksはrecommendedの目的語。'},
+  ]
+},
+212:{
+  sentA:'<span class="hl-blue">That is the church.</span>',
+  sentB:'<span class="hl-red">My sister\'s wedding was held at the church.</span>',
+  steps:[
+    {q:'文B「held at the church」でatはどこに残る？',
+     opts:[{l:'at',c:true},{l:'in',c:false},{l:'on',c:false},{l:'for',c:false}],
+     ok:'正解！atは文末に残る。which my sister\'s wedding was held at の形になる。',
+     ng:'「held at the church」のatに注目。関係代名詞whichの後ろに残る。'},
+    {q:'関係代名詞whichの後ろに何が残る？',
+     opts:[{l:'at（前置詞を後ろに残す）',c:true},{l:'前置詞は消える',c:false},{l:'前置詞は前に出る',c:false},{l:'何も残らない',c:false}],
+     ok:'正解！前置詞atは元の位置のまま文末に残る。which ... atの形。',
+     ng:'元の文「held at the church」のatは消えずに残る。which my sister\'s wedding was held at。'},
+  ]
+},
+213:{
+  sentA:'<span class="hl-blue">〜ことは大切です。</span>',
+  sentB:'<span class="hl-red">正直であること。</span>',
+  steps:[
+    {q:'「大切なこと」を1語の関係代名詞で表すと？',
+     opts:[{l:'what',c:true},{l:'which',c:false},{l:'that',c:false},{l:'who',c:false}],
+     ok:'正解！what = the thing which（先行詞を含む関係代名詞）',
+     ng:'先行詞を含む関係代名詞はwhat。the thing whichに言い換えられる。'},
+    {q:'What is importantは文全体の中でどんな役割？',
+     opts:[{l:'主語（S）',c:true},{l:'目的語（O）',c:false},{l:'補語（C）',c:false},{l:'副詞',c:false}],
+     ok:'正解！What is important = S、is = V、to be honest = C',
+     ng:'What is important is to be honest. → What節全体が主語（S）になっている。'},
+  ]
+},
+214:{
+  sentA:'<span class="hl-blue">You should do ___ first.</span>',
+  sentB:'<span class="hl-red">You want to do ___.</span>',
+  steps:[
+    {q:'「あなたがしたいこと」を1語で表すと？',
+     opts:[{l:'what',c:true},{l:'which',c:false},{l:'that',c:false},{l:'it',c:false}],
+     ok:'正解！what = the thing which。「したいもの・こと」を表す。',
+     ng:'「〜すること/もの」を先行詞なしで表すのはwhat。the thing whichに言い換え可。'},
+    {q:'what you want to doは文の中でどんな役割？',
+     opts:[{l:'doの目的語（O）',c:true},{l:'文の主語（S）',c:false},{l:'補語（C）',c:false},{l:'副詞',c:false}],
+     ok:'正解！You should do [what you want to do]. → doの目的語',
+     ng:'You should do ___. の___にwhat節が入っている → doの目的語。'},
+  ]
+},
+215:{
+  sentA:'<span class="hl-blue">Riding a bike is healthy.</span>',
+  sentB:'<span class="hl-red">さらに環境にも優しい。</span>',
+  steps:[
+    {q:'「さらに・おまけに」を表すwhatの慣用表現は？',
+     opts:[{l:'what is more',c:true},{l:'what is called',c:false},{l:'what it was',c:false},{l:'what he does',c:false}],
+     ok:'正解！and what is more = 「さらに・おまけに」という慣用表現',
+     ng:'「さらに」はwhat is more。what is called＝いわゆる、とは別の表現。'},
+  ]
+},
+216:{
+  sentA:'<span class="hl-blue">これは___です。</span>',
+  sentB:'<span class="hl-red">一般に「世代間の断絶」と呼ばれるもの。</span>',
+  steps:[
+    {q:'「いわゆる〜」を表すwhatの慣用表現は？',
+     opts:[{l:'what is called',c:true},{l:'what is more',c:false},{l:'what it was',c:false},{l:'what we need',c:false}],
+     ok:'正解！what is called / what we call = 「いわゆる」という慣用表現',
+     ng:'「いわゆる」はwhat is called（またはwhat we call）。丸ごと覚えよう。'},
+    {q:'what is called a generation gapは文の中でどんな役割？',
+     opts:[{l:'補語（C）',c:true},{l:'主語（S）',c:false},{l:'目的語（O）',c:false},{l:'副詞',c:false}],
+     ok:'正解！This is [what is called...] → what節がbe動詞の後の補語',
+     ng:'This is ___. の___にwhat節が入っている → 補語（C）。'},
+  ]
+},
+217:{
+  sentA:'<span class="hl-blue">その駅は___ではない。</span>',
+  sentB:'<span class="hl-red">10年前の（駅の）姿。</span>',
+  steps:[
+    {q:'「10年前の（駅の）姿」をwhatで表すと？',
+     opts:[{l:'what it was',c:true},{l:'what it is',c:false},{l:'what is called',c:false},{l:'what is more',c:false}],
+     ok:'正解！what A was = 「AがかつてあったもFAとの姿」',
+     ng:'what it wasは「かつてのその姿」。not what it wasで「以前とは違う」。'},
+  ]
+},
+218:{
+  sentA:'<span class="hl-blue">Mr. Murakami has a daughter.</span>',
+  sentB:'<span class="hl-red">She is a violinist.</span>',
+  steps:[
+    {q:'コンマなしのwho = どんな用法？',
+     opts:[{l:'限定用法（絞り込む）',c:true},{l:'非限定用法（補足する）',c:false},{l:'疑問詞',c:false},{l:'複合関係詞',c:false}],
+     ok:'正解！コンマなし = 限定用法。「バイオリン奏者の娘」と特定している。',
+     ng:'コンマがない → 限定用法。関係詞節が先行詞を「どの〜か」と絞り込む。'},
+    {q:'この文は娘が何人いることを示唆している？',
+     opts:[{l:'複数いる可能性がある',c:true},{l:'1人しかいない',c:false},{l:'娘はいない',c:false},{l:'わからない',c:false}],
+     ok:'正解！限定用法は「複数の中から特定」 → 娘が複数いる前提。',
+     ng:'限定用法（コンマなし）は「どの娘か」を絞り込む → 娘が複数いる前提を含む。'},
+  ]
+},
+219:{
+  sentA:'<span class="hl-blue">Mr. Murakami has a daughter.</span>',
+  sentB:'<span class="hl-red">She is a violinist.</span>',
+  steps:[
+    {q:'コンマありのwho = どんな用法？',
+     opts:[{l:'非限定用法（補足する）',c:true},{l:'限定用法（絞り込む）',c:false},{l:'疑問詞',c:false},{l:'複合関係詞',c:false}],
+     ok:'正解！コンマあり = 非限定用法。娘は1人で補足情報を追加している。',
+     ng:'コンマがある → 非限定用法。先行詞はすでに特定されていて、補足情報を加える。'},
+    {q:'非限定用法で使えないのは？',
+     opts:[{l:'that',c:true},{l:'who',c:false},{l:'which',c:false},{l:'whose',c:false}],
+     ok:'正解！非限定用法（コンマあり）ではthatは使えない。',
+     ng:'非限定用法のルール：thatは使えない / 目的格でも省略不可。'},
+  ]
+},
+220:{
+  sentA:'<span class="hl-blue">I tried to catch up with Takumi.</span>',
+  sentB:'<span class="hl-red">It was impossible.</span>',
+  steps:[
+    {q:'文BのItは何を指している？',
+     opts:[{l:'文A全体（追いつこうとしたこと）',c:true},{l:'Takumiのこと',c:false},{l:'特定の物',c:false},{l:'前の文の名詞',c:false}],
+     ok:'正解！It = 「追いつこうとしたこと」＝文A全体を受けている',
+     ng:'「It was impossible」のItは「追いつこうとしたこと」= 前の文全体を受ける。'},
+    {q:'文A全体を受けるコンマ付きの関係代名詞は？',
+     opts:[{l:'コンマ＋which',c:true},{l:'コンマ＋who',c:false},{l:'コンマ＋that',c:false},{l:'コンマ＋what',c:false}],
+     ok:'正解！コンマ＋whichで前の文・節全体を受ける。thatは不可。',
+     ng:'前の文全体を受ける → コンマ＋which。thatは非限定用法では使えない。'},
+  ]
+},
+221:{
+  sentA:'<span class="hl-blue">Yuka quit the club suddenly.</span>',
+  sentB:'<span class="hl-red">That surprised everyone.</span>',
+  steps:[
+    {q:'文BのThatは何を指している？',
+     opts:[{l:'文A全体（ユカが突然やめたこと）',c:true},{l:'Yukaのこと',c:false},{l:'the clubのこと',c:false},{l:'suddenlyのこと',c:false}],
+     ok:'正解！That = 「ユカが突然やめたこと」= 文A全体を受けている',
+     ng:'「That surprised everyone」のThatは「ユカが突然やめたこと」= 前の文全体。'},
+    {q:'文A全体を先行詞とするコンマ付きの関係代名詞は？',
+     opts:[{l:'コンマ＋which',c:true},{l:'コンマ＋who',c:false},{l:'コンマ＋that',c:false},{l:'コンマ＋whom',c:false}],
+     ok:'正解！コンマ＋whichで前の節・文全体を受ける。',
+     ng:'前の節全体を受ける → コンマ＋which。thatは非限定用法では使えない。'},
+  ]
+},
+222:{
+  sentA:'<span class="hl-blue">I\'m looking forward to the day.</span>',
+  sentB:'<span class="hl-red">We can all travel to the moon on the day.</span>',
+  steps:[
+    {q:'先行詞「the day」は何を表す語？',
+     opts:[{l:'時',c:true},{l:'場所',c:false},{l:'理由',c:false},{l:'方法',c:false}],
+     ok:'正解！the day = 時を表す語 → 関係副詞whenを使う',
+     ng:'day / time / year / moment など「時」を表す語が先行詞 → when。'},
+    {q:'文Bの「on the day」のon whichはどの関係副詞と同じ？',
+     opts:[{l:'when',c:true},{l:'where',c:false},{l:'why',c:false},{l:'how',c:false}],
+     ok:'正解！on which = when（時）',
+     ng:'when = at/on/in which（時）。whichと違い後ろに完全な文が来る。'},
+  ]
+},
+223:{
+  sentA:'<span class="hl-blue">I want a room.</span>',
+  sentB:'<span class="hl-red">I can practice the trumpet in the room even at night.</span>',
+  steps:[
+    {q:'先行詞「a room」は何を表す語？',
+     opts:[{l:'場所',c:true},{l:'時',c:false},{l:'理由',c:false},{l:'方法',c:false}],
+     ok:'正解！room = 場所を表す語 → 関係副詞whereを使う',
+     ng:'room / place / city / house など「場所」を表す語が先行詞 → where。'},
+    {q:'文Bの「in the room」のin whichはどの関係副詞と同じ？',
+     opts:[{l:'where',c:true},{l:'when',c:false},{l:'why',c:false},{l:'how',c:false}],
+     ok:'正解！in which = where（場所）',
+     ng:'where = at/in/on which（場所）。後ろに完全な文が来るのが特徴。'},
+  ]
+},
+224:{
+  sentA:'<span class="hl-blue">Please tell me the reason.</span>',
+  sentB:'<span class="hl-red">You want to live in Mexico for the reason.</span>',
+  steps:[
+    {q:'先行詞「the reason」 → 使う関係副詞は？',
+     opts:[{l:'why',c:true},{l:'when',c:false},{l:'where',c:false},{l:'how',c:false}],
+     ok:'正解！the reason + why。for which に書き換えも可。',
+     ng:'reason（理由）が先行詞 → why。for which と同じ意味。'},
+  ]
+},
+225:{
+  sentA:'<span class="hl-blue">He took the plane to Tokyo.</span>',
+  sentB:'<span class="hl-red">That\'s the way he got here in time.</span>',
+  steps:[
+    {q:'「そうやって・その方法で」を表す関係副詞は？',
+     opts:[{l:'how',c:true},{l:'when',c:false},{l:'where',c:false},{l:'why',c:false}],
+     ok:'正解！That\'s how〜 = 「そうやって〜した」。先行詞the wayが省略された形。',
+     ng:'方法を表す関係副詞はhow。the way how とは書けないので注意。'},
+    {q:'That\'s how 〜 の先行詞（省略されているもの）は？',
+     opts:[{l:'the way（方法）',c:true},{l:'the time（時）',c:false},{l:'the place（場所）',c:false},{l:'the reason（理由）',c:false}],
+     ok:'正解！That\'s how = That\'s the way in whichの省略形',
+     ng:'howの先行詞はthe way（方法）。the wayとhowは併用できない。'},
+  ]
+},
+226:{
+  sentA:'<span class="hl-blue">April is ___.</span>',
+  sentB:'<span class="hl-red">The school year starts in Japan in April.</span>',
+  steps:[
+    {q:'when節が補語になる形。Aprilと等しいのは？',
+     opts:[{l:'when the school year starts in Japan',c:true},{l:'where school starts',c:false},{l:'why April matters',c:false},{l:'how school begins',c:false}],
+     ok:'正解！April = [when the school year starts]。when節が補語（C）になる。',
+     ng:'April is ___. の___にwhen節が入る → when節が補語。'},
+  ]
+},
+227:{
+  sentA:'<span class="hl-blue">That is ___.</span>',
+  sentB:'<span class="hl-red">The new station will be built there.</span>',
+  steps:[
+    {q:'where節が補語になる形。Thatと等しいのは？',
+     opts:[{l:'where the new station will be built',c:true},{l:'when the station opens',c:false},{l:'why they build it',c:false},{l:'how it was built',c:false}],
+     ok:'正解！That = [where the new station will be built]。where節が補語（C）。',
+     ng:'That is ___. の___にwhere節が入る → where節が補語。'},
+  ]
+},
+228:{
+  sentA:'<span class="hl-blue">I overslept.</span>',
+  sentB:'<span class="hl-red">That\'s the reason I was late for the appointment.</span>',
+  steps:[
+    {q:'That\'s why〜 と That\'s because〜 の違いは？',
+     opts:[{l:'why=原因→結果、because=結果→原因',c:true},{l:'because=原因→結果、why=結果→原因',c:false},{l:'どちらも同じ意味',c:false},{l:'whyは疑問文のみ',c:false}],
+     ok:'正解！That\'s why〜（だからこそ〜）/ That\'s because〜（なぜなら〜）',
+     ng:'That\'s why〜：前の内容が原因で結果を述べる。That\'s because〜：前の結果の原因を述べる。'},
+  ]
+},
+229:{
+  sentA:'<span class="hl-blue">I was born in 1998.</span>',
+  sentB:'<span class="hl-red">The Nagano Olympics were held then.</span>',
+  steps:[
+    {q:'コンマ＋whenの用法は？',
+     opts:[{l:'非限定（そのとき〜）',c:true},{l:'限定（〜するとき）',c:false},{l:'疑問（いつ？）',c:false},{l:'条件（〜するとき）',c:false}],
+     ok:'正解！コンマ＋when = 非限定用法。「そのとき〜」と補足情報を追加。',
+     ng:'コンマ＋when → 非限定用法。先行詞1998について補足説明を加えている。'},
+  ]
+},
+230:{
+  sentA:'<span class="hl-blue">She moved to Fukuoka.</span>',
+  sentB:'<span class="hl-red">She started her new business there.</span>',
+  steps:[
+    {q:'コンマ＋whereの用法は？',
+     opts:[{l:'非限定（そこで〜）',c:true},{l:'限定（〜する場所）',c:false},{l:'疑問（どこ？）',c:false},{l:'条件（〜する場所）',c:false}],
+     ok:'正解！コンマ＋where = 非限定用法。「そこで〜」と補足情報を追加。',
+     ng:'コンマ＋where → 非限定用法。先行詞Fukuokaについて補足説明を加えている。'},
+  ]
+},
+231:{
+  sentA:'<span class="hl-blue">___ will be welcome.</span>',
+  sentB:'<span class="hl-red">Anyone who wants to join our soccer team.</span>',
+  steps:[
+    {q:'「〜する人は誰でも」を1語で表すと？',
+     opts:[{l:'Whoever',c:true},{l:'Whatever',c:false},{l:'Whenever',c:false},{l:'Wherever',c:false}],
+     ok:'正解！Whoever = anyone who。名詞節として主語になれる。',
+     ng:'Whoever = anyone who（人）、Whatever = anything that（物）。'},
+    {q:'Whoever節はこの文でどんな役割？',
+     opts:[{l:'主語（S）',c:true},{l:'目的語（O）',c:false},{l:'補語（C）',c:false},{l:'副詞節（譲歩）',c:false}],
+     ok:'正解！Whoever wants to join = 文全体の主語（S）。名詞節用法。',
+     ng:'Whoever wants to join our soccer team will be welcome. → Whoever節がwillの主語。'},
+  ]
+},
+232:{
+  sentA:'<span class="hl-blue">Meg accomplishes ___.</span>',
+  sentB:'<span class="hl-red">anything that she decides to do</span>',
+  steps:[
+    {q:'「〜するものは何でも」を1語で表すと？',
+     opts:[{l:'whatever',c:true},{l:'whoever',c:false},{l:'whenever',c:false},{l:'however',c:false}],
+     ok:'正解！whatever = anything that。名詞節として目的語になれる。',
+     ng:'whatever = anything that（物・こと）。whoever = anyone who（人）。'},
+  ]
+},
+233:{
+  sentA:'<span class="hl-blue">___, I won\'t change it.</span>',
+  sentB:'<span class="hl-red">誰が私の計画に反対しても。</span>',
+  steps:[
+    {q:'「誰が〜しても」（譲歩）を表すのは？',
+     opts:[{l:'Whoever（コンマ付き）',c:true},{l:'Whoever（コンマなし・主語）',c:false},{l:'Whatever',c:false},{l:'Whichever',c:false}],
+     ok:'正解！Whoever〜, SV...= 「誰が〜しても」。No matter whoに言い換え可。',
+     ng:'Whoever＋コンマ = 譲歩の副詞節。231番のwhoever（主語）との違いに注意。'},
+  ]
+},
+234:{
+  sentA:'<span class="hl-blue">___, do your best.</span>',
+  sentB:'<span class="hl-red">何をするにしても。</span>',
+  steps:[
+    {q:'「何を〜しても」（譲歩）を表すのは？',
+     opts:[{l:'Whatever（コンマ付き）',c:true},{l:'Whoever',c:false},{l:'Whenever',c:false},{l:'However',c:false}],
+     ok:'正解！Whatever〜, SV...= 「何を〜しても」。No matter whatに言い換え可。',
+     ng:'Whatever + コンマ = 「何を〜しても」という譲歩。No matter whatと同じ意味。'},
+  ]
+},
+235:{
+  sentA:'<span class="hl-blue">Contact me ___.</span>',
+  sentB:'<span class="hl-red">at any time when you are in trouble</span>',
+  steps:[
+    {q:'「〜するときはいつでも」を1語で表すと？',
+     opts:[{l:'whenever',c:true},{l:'wherever',c:false},{l:'however',c:false},{l:'whatever',c:false}],
+     ok:'正解！whenever = at any time when。',
+     ng:'whenever（いつでも）/ wherever（どこでも）/ however（どんなに〜でも）を区別しよう。'},
+  ]
+},
+236:{
+  sentA:'<span class="hl-blue">You may sit ___.</span>',
+  sentB:'<span class="hl-red">anywhere where you like</span>',
+  steps:[
+    {q:'「〜するところならどこでも」を1語で表すと？',
+     opts:[{l:'wherever',c:true},{l:'whenever',c:false},{l:'however',c:false},{l:'whatever',c:false}],
+     ok:'正解！wherever = anywhere where。',
+     ng:'wherever（どこでも）/ whenever（いつでも）を混同しないように。'},
+  ]
+},
+237:{
+  sentA:'<span class="hl-blue">___, I feel calm.</span>',
+  sentB:'<span class="hl-red">いつこのお寺を訪ねても。</span>',
+  steps:[
+    {q:'「いつ〜しても」（譲歩）を表すのは？',
+     opts:[{l:'Whenever（コンマ付き）',c:true},{l:'Wherever',c:false},{l:'However',c:false},{l:'Whatever',c:false}],
+     ok:'正解！Whenever〜, SV... = 「いつ〜しても」。No matter whenに言い換え可。',
+     ng:'Whenever + コンマ = 「いつ〜しても」という譲歩。235番の「いつでも」と区別しよう。'},
+  ]
+},
+238:{
+  sentA:'<span class="hl-blue">___, I will never forget you.</span>',
+  sentB:'<span class="hl-red">どこにいても。</span>',
+  steps:[
+    {q:'「どこに〜しても」（譲歩）を表すのは？',
+     opts:[{l:'Wherever（コンマ付き）',c:true},{l:'Whenever',c:false},{l:'However',c:false},{l:'Whatever',c:false}],
+     ok:'正解！Wherever〜, SV... = 「どこに〜しても」。No matter whereに言い換え可。',
+     ng:'Wherever + コンマ = 「どこにいても」という譲歩。No matter whereと同じ意味。'},
+  ]
+},
+239:{
+  sentA:'<span class="hl-blue">___, I won\'t give up.</span>',
+  sentB:'<span class="hl-red">訓練がどんなに（つらく）ても。</span>',
+  steps:[
+    {q:'「どんなに〜でも」（譲歩）を表すのは？',
+     opts:[{l:'However hard',c:true},{l:'Whatever hard',c:false},{l:'Whenever hard',c:false},{l:'Wherever hard',c:false}],
+     ok:'正解！However＋形容詞/副詞で「どんなに〜でも」。No matter how hardに言い換え可。',
+     ng:'however + 形容詞/副詞 = 「どんなに〜でも」。howeverは単独では使えない。'},
+  ]
+},
+240:{
+  sentA:'<span class="hl-blue">The time may come soon.</span>',
+  sentB:'<span class="hl-red">Flying cars will be a familiar sight at the time.</span>',
+  steps:[
+    {q:'先行詞「The time」と関係詞節が離れている。先行詞は何を表す語？',
+     opts:[{l:'時',c:true},{l:'場所',c:false},{l:'理由',c:false},{l:'方法',c:false}],
+     ok:'正解！The time = 時を表す語 → 関係副詞when。先行詞と節が離れていても同じ。',
+     ng:'The time（時）が先行詞 → when。may come soonが間に挟まっているだけ。'},
+    {q:'「The time will come when〜」はどんな慣用表現？',
+     opts:[{l:'〜する時がいずれやってくる',c:true},{l:'〜する時間がなくなる',c:false},{l:'〜する時間がある',c:false},{l:'〜する機会を逃す',c:false}],
+     ok:'正解！The time will come when〜 = 「〜する日がいずれやってくる」という重要表現。',
+     ng:'The time will come when〜 は「〜する日がいつかやってくる」という慣用表現。'},
+  ]
+},
+};
+let questions=[], curIdx=0, score=0, selectedCount=0, selectedOrder='random', selectedStart=203;
+let answerOrder=[], pool=[], checked=false;
+let dragData=null, touchData=null, touchId=null;
+let results=[];
+let phase=1;
+let ph1State=[];
+
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+
+// ===================== INIT =====================
+function startQuiz(){
+  const pool=ALL_Q.filter(q=>q.id>=selectedStart);
+  const base=selectedOrder==='order'
+    ?[...pool].sort((a,b)=>a.id-b.id)
+    :shuffle([...pool]);
+  questions=base.slice(0,Math.min(selectedCount,base.length));
+  curIdx=0;score=0;results=[];
+  initQ();
+}
+function initQ(){
+  const q=questions[curIdx];
+  const sh=shuffle(q.words.map((w,i)=>({word:w,origIdx:i})));
+  pool=sh.map((item,i)=>({...item,pi:i,used:false}));
+  answerOrder=[];checked=false;
+  phase=1;
+  const pd=PH1[q.id];
+  ph1State=pd?pd.steps.map(()=>({answered:false,correct:false,wrongTried:false})):[];
+  if(!pd)phase=2;
+  render();
+}
+
+// ===================== RENDER =====================
+function render(){
+  const app=document.getElementById('app');
+  if(curIdx>=questions.length){app.innerHTML=renderFinish();return;}
+  const q=questions[curIdx];
+  const pct=(curIdx/questions.length*100).toFixed(1);
+
+  const header=`
+    <div class="header"><span class="unit-label">関係代名詞</span><span class="progress-label">${curIdx+1} / ${questions.length}</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+
+  const badgeRow=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+    <span class="type-badge" style="margin-bottom:0">${q.type}</span>
+    <span style="font-size:11px;color:var(--sub);font-weight:600;background:#f0f0f0;padding:3px 9px;border-radius:99px">No.${q.id}</span>
+    <span class="ph1-phase-badge ${phase===1?'p1':'p2'}">${phase===1?'フェーズ1　文を組み立てる':'フェーズ2　並び替え'}</span>
+  </div>`;
+
+  const jaBox=`<div class="japanese-box"><div class="japanese-label">日本語</div><div class="japanese">${q.jaPlain}</div></div>`;
+
+  if(phase===1){
+    const pd=PH1[q.id];
+    const allCorrect=ph1State.every(s=>s.correct);
+
+    // STEP1: 色分け問題文 + 英文2文
+    const step1HTML=`<div class="ph1-step">
+      <div class="ph1-label">STEP 1　2つの文に分解する</div>
+      <div style="font-size:15px;font-weight:700;line-height:1.8;padding:8px 10px;background:#f8f9ff;border-radius:7px;margin-bottom:10px">${q.ja}</div>
+      <div class="ph1-sent">${pd.sentA}</div>
+      <div class="ph1-sent">${pd.sentB}</div>
+    </div>`;
+
+    // 確認STEPブロック群（STEP2以降）
+    const confirmStepsHTML=pd.steps.map((s,si)=>{
+      const st=ph1State[si];
+      const locked=si>0&&!ph1State[si-1].correct;
+      const optsHTML=`<div class="ph1-grid">${s.opts.map((o,oi)=>{
+        let cls='ph1-btn';
+        if(st.answered){cls+=o.c?' ok':' ng';}
+        return `<button class="${cls}" onclick="ph1Answer(${si},${oi},${o.c},this)">${o.l}</button>`;
+      }).join('')}</div>`;
+      const fbHTML=`<div class="ph1-fb${st.answered?(st.correct?' ok':' ng'):''}" id="fb${si}" style="display:${st.answered?'block':'none'}">${st.correct?s.ok:(st.wrongTried?s.ng:'')}</div>`;
+      return `<div class="ph1-step${locked?' locked':''}" id="ph1s${si}">
+        <div class="ph1-label">STEP ${si+2}　確認しよう</div>
+        <div class="ph1-q">${s.q}</div>
+        ${optsHTML}${fbHTML}
+      </div>`;
+    }).join('');
+
+    // 並び替えブロック（全STEP正解後に表示）
+    let sortBlockHTML='';
+    if(allCorrect){
+      const ansWords=answerOrder.map(pi=>pool[pi]);
+      const ansHTML=ansWords.length===0
+        ?'<span class="placeholder">単語をタップして並べよう</span>'
+        :ansWords.map((item,pos)=>`<span class="chip selected${checked?(isCorrect()?' correct-chip':' wrong-chip'):''}" data-area="answer" data-pos="${pos}" style="cursor:${checked?'default':'grab'}">${item.word}</span>`).join('');
+      const bankHTML=pool.map((item,pi)=>`<span class="chip bank${item.used?' used':''}" data-area="bank" data-pi="${pi}" style="cursor:${item.used||checked?'default':'grab'}">${item.word}</span>`).join('');
+
+      if(!checked){
+        sortBlockHTML=`<div class="ph1-step" id="sortBlock">
+          <div class="ph1-label" style="color:var(--correct)">STEP ${pd.steps.length+2}　並び替えて英文を完成させよう</div>
+          <div class="answer-zone" id="answerZone">${ansHTML}</div>
+          <div class="word-bank" id="wordBank">${bankHTML}</div>
+          <button class="btn-clear" id="clearBtn">リセット</button>
+          <button class="btn" id="checkBtn" ${answerOrder.length===0?'disabled':''}>答え合わせ</button>
+        </div>`;
+      } else {
+        const ok=isCorrect();
+        const stepsHTML=q.steps.map((s,i)=>{
+          const jaColorBlock=i===0&&q.ja?`<div class="step-ja">${q.ja}</div>`:'';
+          return `<div class="step-block" id="sb${i}"><div class="step-num">${s.num}</div>${jaColorBlock}<div class="step-body">${s.body}</div></div>`;
+        }).join('');
+        const expHTML=buildExp(q.exp);
+        const wrongAns=!ok?`<div class="correct-ans"><span class="correct-label">正解：</span>${q.answer}</div>`:'';
+        const retryBtn=!ok?`<button class="btn-clear" id="retryBtn" onclick="doRetry()" style="margin-top:8px;border-color:#c5cae9;color:var(--primary)">並べ直す</button>`:'';
+        sortBlockHTML=`<div class="ph1-step" id="sortBlock">
+          <div class="ph1-label" style="color:var(--correct)">STEP ${pd.steps.length+2}　並び替えて英文を完成させよう</div>
+          <div class="answer-zone">${ansHTML}</div>
+          <div class="word-bank">${bankHTML}</div>
+          <div class="result-box" style="background:${ok?'var(--correct-bg)':'var(--wrong-bg)'}">
+            <div class="result-icon">${ok?'⭕️':'❌'}</div>
+            <div><div class="result-label" style="color:${ok?'var(--correct)':'var(--wrong)'}">${ok?'正解！':'不正解'}</div>${wrongAns}</div>
+          </div>
+          ${retryBtn}
+          <div class="steps-wrap">${stepsHTML}</div>
+          ${expHTML}
+          <button class="btn" id="nextBtn">${curIdx+1>=questions.length?'結果を見る':'次の問題へ →'}</button>
+        </div>`;
+      }
+    }
+
+    app.innerHTML=`${header}<div class="card">${badgeRow}${jaBox}${step1HTML}${confirmStepsHTML}${sortBlockHTML}</div><div class="score-chip">スコア ${score}点</div>`;
+    bindEvents();
+    if(checked){
+      const sbs=document.querySelectorAll('.step-block');
+      sbs.forEach((el,i)=>setTimeout(()=>el.style.opacity='1',i*180));
+      const eb=document.getElementById('expBlock');
+      if(eb)setTimeout(()=>eb.style.opacity='1',sbs.length*180+100);
+    }
+  } else {
+    const ansWords=answerOrder.map(pi=>pool[pi]);
+    const ansHTML=ansWords.length===0
+      ?'<span class="placeholder">単語をタップして並べよう</span>'
+      :ansWords.map((item,pos)=>`<span class="chip selected${checked?(isCorrect()?' correct-chip':' wrong-chip'):''}" data-area="answer" data-pos="${pos}" style="cursor:${checked?'default':'grab'}">${item.word}</span>`).join('');
+    const bankHTML=pool.map((item,pi)=>`<span class="chip bank${item.used?' used':''}" data-area="bank" data-pi="${pi}" style="cursor:${item.used||checked?'default':'grab'}">${item.word}</span>`).join('');
+
+    let actionHTML='';
+    if(!checked){
+      actionHTML=`<button class="btn-clear" id="clearBtn">リセット</button><button class="btn" id="checkBtn" ${answerOrder.length===0?'disabled':''}>答え合わせ</button>`;
+    } else {
+      const ok=isCorrect();
+      const stepsHTML=q.steps.map((s,i)=>{
+        const jaColorBlock=i===0&&q.ja?`<div class="step-ja">${q.ja}</div>`:'';
+        return `<div class="step-block" id="sb${i}"><div class="step-num">${s.num}</div>${jaColorBlock}<div class="step-body">${s.body}</div></div>`;
+      }).join('');
+      const expHTML=buildExp(q.exp);
+      const wrongAns=!ok?`<div class="correct-ans"><span class="correct-label">正解：</span>${q.answer}</div>`:'';
+      const retryBtn2=!ok?`<button class="btn-clear" onclick="doRetry()" style="margin-top:8px;border-color:#c5cae9;color:var(--primary)">並べ直す</button>`:'';
+      actionHTML=`
+        <div class="result-box" style="background:${ok?'var(--correct-bg)':'var(--wrong-bg)'}">
+          <div class="result-icon">${ok?'⭕️':'❌'}</div>
+          <div><div class="result-label" style="color:${ok?'var(--correct)':'var(--wrong)'}">${ok?'正解！':'不正解'}</div>${wrongAns}</div>
+        </div>
+        ${retryBtn2}
+        <div class="steps-wrap">${stepsHTML}</div>
+        ${expHTML}
+        <button class="btn" id="nextBtn">${curIdx+1>=questions.length?'結果を見る':'次の問題へ →'}</button>`;
+    }
+    app.innerHTML=`${header}<div class="card">${badgeRow}${jaBox}<div class="answer-zone" id="answerZone">${ansHTML}</div><div class="word-bank" id="wordBank">${bankHTML}</div>${actionHTML}</div><div class="score-chip">スコア ${score}点</div>`;
+    bindEvents();
+    if(checked){
+      const sbs=document.querySelectorAll('.step-block');
+      sbs.forEach((el,i)=>setTimeout(()=>el.style.opacity='1',i*180));
+      const eb=document.getElementById('expBlock');
+      if(eb)setTimeout(()=>eb.style.opacity='1',sbs.length*180+100);
+    }
+  }
+}
+
+function goPhase2(){phase=2;render();} // kept for safety but unused
+
+function doRetry(){
+  // チップを全部bank側に戻してcheckedをリセット（スコアは変えない）
+  answerOrder.forEach(pi=>{pool[pi].used=false;});
+  answerOrder=[];
+  checked=false;
+  // スコアを1戻す（不正解だったのでdoCheckで加算されていない → 戻す必要なし）
+  render();
+}
+
+function ph1Answer(si,oi,correct,btn){
+  const st=ph1State[si];
+  if(st.answered)return;
+  if(correct){
+    st.answered=true;st.correct=true;
+    render();
+  } else {
+    st.wrongTried=true;
+    const fb=document.getElementById('fb'+si);
+    if(fb){fb.style.display='block';fb.className='ph1-fb ng';fb.textContent=PH1[questions[curIdx].id].steps[si].ng;}
+    if(btn){btn.classList.add('ng');btn.disabled=true;}
+  }
+}
+
+function buildExp(exp){
+  if(!exp)return'';
+  const roleTag=`<span class="tag tag-blue">${exp.role}</span>`;
+  const pts=exp.points.map(p=>`<div class="exp-title">${p.title}</div><div class="exp-text">${p.text}${p.code?`<code class="exp-code">${p.code}</code>`:''}</div>`).join('');
+  return`<div class="exp-block" id="expBlock"><div class="exp-label">解説　${roleTag}</div>${pts}</div>`;
+}
+
+function isCorrect(){
+  // 末尾ピリオドを除いて比較（コンマはwordsに含まれているのでそのまま）
+  const normalize = s => s.trim().replace(/\.+$/, '').replace(/\s+/g,' ');
+  const got = normalize(answerOrder.map(pi=>pool[pi].word).join(' '));
+  const expected = normalize(questions[curIdx].answer);
+  return got === expected;
+}
+
+// ===================== EVENTS =====================
+
+// スワイプ検知用
+let swipeStartX=0, swipeStartY=0, swipeChip=null, swipePos=-1;
+// ドラッグカーソル挿入位置
+let dragInsertPos=-1;
+
+function bindEvents(){
+  document.getElementById('checkBtn')?.addEventListener('click',doCheck);
+  document.getElementById('clearBtn')?.addEventListener('click',doClear);
+  document.getElementById('nextBtn')?.addEventListener('click',doNext);
+
+  // Click: bankから追加
+  document.querySelectorAll('.chip.bank:not(.used)').forEach(el=>{
+    el.addEventListener('click',()=>{if(checked)return;const pi=+el.dataset.pi;pool[pi].used=true;answerOrder.push(pi);render();});
+  });
+  // Click: answerから削除
+  document.querySelectorAll('.chip.selected').forEach(el=>{
+    el.addEventListener('click',()=>{if(checked)return;const pos=+el.dataset.pos;const pi=answerOrder[pos];pool[pi].used=false;answerOrder.splice(pos,1);render();});
+  });
+
+  // Desktop drag
+  document.querySelectorAll('.chip:not(.used)').forEach(el=>{
+    el.setAttribute('draggable','true');
+    el.addEventListener('dragstart',onDragStart);
+    el.addEventListener('dragend',onDragEnd);
+  });
+  const az=document.getElementById('answerZone');
+  const wb=document.getElementById('wordBank');
+  az?.addEventListener('dragover',e=>{e.preventDefault();updateInsertCursor(az,e.clientX);});
+  az?.addEventListener('dragleave',e=>{if(!az.contains(e.relatedTarget)){clearInsertCursor(az);az.classList.remove('drag-over');}});
+  az?.addEventListener('drop',e=>{e.preventDefault();clearInsertCursor(az);az.classList.remove('drag-over');onDropAnswer(e);});
+  wb?.addEventListener('dragover',e=>e.preventDefault());
+  wb?.addEventListener('drop',e=>{e.preventDefault();onDropBank();});
+
+  // Touch
+  document.querySelectorAll('.chip:not(.used)').forEach(el=>{
+    el.addEventListener('touchstart',onTouchStart,{passive:false});
+  });
+  document.addEventListener('touchmove',onTouchMove,{passive:false});
+  document.addEventListener('touchend',onTouchEnd);
+}
+
+// ---- カーソル線表示 ----
+function updateInsertCursor(az, clientX){
+  az.classList.add('drag-over');
+  const chips=[...az.querySelectorAll('.chip.selected:not(.dragging)')];
+  // 既存カーソル削除
+  az.querySelectorAll('.insert-cursor').forEach(el=>el.remove());
+  let pos=chips.length;
+  for(let i=0;i<chips.length;i++){
+    const r=chips[i].getBoundingClientRect();
+    if(clientX<r.left+r.width/2){pos=i;break;}
+  }
+  dragInsertPos=pos;
+  // カーソル線挿入
+  const cursor=document.createElement('div');
+  cursor.className='insert-cursor';
+  cursor.style.cssText='width:3px;height:32px;background:var(--primary);border-radius:2px;flex-shrink:0;align-self:center;';
+  if(pos===0){
+    az.insertBefore(cursor,az.firstChild);
+  } else if(pos>=chips.length){
+    az.appendChild(cursor);
+  } else {
+    az.insertBefore(cursor,chips[pos]);
+  }
+}
+function clearInsertCursor(az){
+  az?.querySelectorAll('.insert-cursor').forEach(el=>el.remove());
+  dragInsertPos=-1;
+}
+
+// ---- Desktop drag ----
+function onDragStart(e){
+  const el=e.currentTarget;
+  dragData={area:el.dataset.area,pi:el.dataset.pi!==undefined?+el.dataset.pi:null,pos:el.dataset.pos!==undefined?+el.dataset.pos:null};
+  el.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+}
+function onDragEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  const az=document.getElementById('answerZone');
+  clearInsertCursor(az);
+  dragData=null;
+}
+
+function onDropAnswer(e){
+  if(!dragData)return;
+  const az=document.getElementById('answerZone');
+  const chips=[...az.querySelectorAll('.chip.selected:not(.dragging)')];
+  let dropPos=chips.length;
+  for(let i=0;i<chips.length;i++){
+    const r=chips[i].getBoundingClientRect();
+    if(e.clientX<r.left+r.width/2){dropPos=i;break;}
+  }
+  if(dragData.area==='bank'){
+    pool[dragData.pi].used=true;
+    answerOrder.splice(dropPos,0,dragData.pi);
+  } else if(dragData.area==='answer'){
+    const fromPos=dragData.pos;
+    const pi=answerOrder[fromPos];
+    answerOrder.splice(fromPos,1);
+    const ins=fromPos<dropPos?dropPos-1:dropPos;
+    answerOrder.splice(Math.max(0,ins),0,pi);
+  }
+  render();
+}
+
+function onDropBank(){
+  if(!dragData||dragData.area!=='answer')return;
+  const pi=answerOrder[dragData.pos];
+  pool[pi].used=false;answerOrder.splice(dragData.pos,1);render();
+}
+
+// ---- Touch drag + swipe ----
+function onTouchStart(e){
+  if(checked)return;
+  const el=e.currentTarget;
+  const t=e.touches[0];
+  swipeStartX=t.clientX;swipeStartY=t.clientY;
+  swipeChip=el;
+  swipePos=el.dataset.pos!==undefined?+el.dataset.pos:-1;
+
+  touchData={area:el.dataset.area,pi:el.dataset.pi!==undefined?+el.dataset.pi:null,pos:el.dataset.pos!==undefined?+el.dataset.pos:null,word:el.textContent.trim()};
+  touchId=t.identifier;
+  const g=document.getElementById('ghost');
+  g.textContent=touchData.word;g.style.display='block';
+  moveGhost(t.clientX,t.clientY);
+  el.classList.add('dragging');
+  e.preventDefault();
+}
+
+function onTouchMove(e){
+  if(!touchData)return;
+  const t=[...e.touches].find(t=>t.identifier===touchId);
+  if(!t)return;
+  moveGhost(t.clientX,t.clientY);
+  const az=document.getElementById('answerZone');
+  if(az){
+    const r=az.getBoundingClientRect();
+    const inZone=t.clientX>=r.left&&t.clientX<=r.right&&t.clientY>=r.top&&t.clientY<=r.bottom;
+    if(inZone){updateInsertCursor(az,t.clientX);}
+    else{clearInsertCursor(az);az.classList.remove('drag-over');}
+  }
+  e.preventDefault();
+}
+
+function onTouchEnd(e){
+  if(!touchData)return;
+  document.getElementById('ghost').style.display='none';
+  document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));
+  const t=e.changedTouches[0];
+  const az=document.getElementById('answerZone');
+  const wb=document.getElementById('wordBank');
+  clearInsertCursor(az);
+
+  // スワイプ判定（答えエリアの単語を左右に移動）
+  const dx=t.clientX-swipeStartX;
+  const dy=t.clientY-swipeStartY;
+  const isSwipe=Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.5;
+  if(isSwipe && touchData.area==='answer' && swipePos>=0){
+    const dir=dx>0?1:-1;
+    const newPos=swipePos+dir;
+    if(newPos>=0&&newPos<answerOrder.length){
+      const pi=answerOrder[swipePos];
+      answerOrder.splice(swipePos,1);
+      answerOrder.splice(newPos,0,pi);
+      touchData=null;touchId=null;swipeChip=null;
+      az?.classList.remove('drag-over');
+      render();return;
+    }
+  }
+
+  let dropped=false;
+  if(az){
+    const r=az.getBoundingClientRect();
+    if(t.clientX>=r.left&&t.clientX<=r.right&&t.clientY>=r.top&&t.clientY<=r.bottom){
+      // カーソル位置に挿入
+      const chips=[...az.querySelectorAll('.chip.selected')];
+      let dropPos=chips.length;
+      for(let i=0;i<chips.length;i++){const r2=chips[i].getBoundingClientRect();if(t.clientX<r2.left+r2.width/2){dropPos=i;break;}}
+      if(touchData.area==='bank'){
+        pool[touchData.pi].used=true;
+        answerOrder.splice(dropPos,0,touchData.pi);
+        dropped=true;
+      } else if(touchData.area==='answer'){
+        const from=touchData.pos;const pi=answerOrder[from];
+        answerOrder.splice(from,1);
+        const ins=from<dropPos?dropPos-1:dropPos;
+        answerOrder.splice(Math.max(0,ins),0,pi);
+        dropped=true;
+      }
+    }
+  }
+  if(!dropped&&wb){
+    const r=wb.getBoundingClientRect();
+    if(t.clientX>=r.left&&t.clientX<=r.right&&t.clientY>=r.top&&t.clientY<=r.bottom){
+      if(touchData.area==='answer'){const pi=answerOrder[touchData.pos];pool[pi].used=false;answerOrder.splice(touchData.pos,1);dropped=true;}
+    }
+  }
+  touchData=null;touchId=null;swipeChip=null;
+  az?.classList.remove('drag-over');
+  if(dropped)render();
+}
+function moveGhost(x,y){const g=document.getElementById('ghost');g.style.left=x+'px';g.style.top=y+'px';}
+
+function doCheck(){
+  checked=true;
+  const ok=isCorrect();
+  if(ok)score++;
+  const q=questions[curIdx];
+  const userAns=answerOrder.map(pi=>pool[pi].word).join(' ');
+  results.push({id:q.id,type:q.type,jaPlain:q.jaPlain,answer:q.answer,userAnswer:userAns,correct:ok});
+  render();
+}
+function doClear(){answerOrder.forEach(pi=>pool[pi].used=false);answerOrder=[];render();}
+function doNext(){curIdx++;if(curIdx>=questions.length){render();return;}initQ();}
+
+// ===================== FINISH =====================
+function renderFinish(){
+  const total=questions.length;
+  const pct=Math.round(score/total*100);
+  const msg=score===total?'全問正解！完璧です！🎊':pct>=80?'すばらしい！もう少しで満点！':pct>=60?'よくできました！苦手な種類を復習しよう':'もう一度チャレンジしよう！';
+
+  const correctList=results.filter(r=>r.correct);
+  const wrongList=results.filter(r=>!r.correct);
+
+  const renderRow=(r,idx)=>`
+    <div style="border:1px solid ${r.correct?'#c8e6c9':'#ffcdd2'};border-radius:10px;padding:10px 12px;margin-bottom:8px;background:${r.correct?'#f1f8e9':'#fff8f8'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-size:16px">${r.correct?'⭕️':'❌'}</span>
+        <span style="font-size:10px;font-weight:700;color:var(--sub);background:#f0f0f0;padding:2px 8px;border-radius:99px">No.${r.id}</span>
+        <span style="font-size:10px;color:var(--sub)">${r.type}</span>
+      </div>
+      <div style="font-size:12px;color:#444;margin-bottom:3px">${r.jaPlain}</div>
+      <div style="font-size:12px;font-family:'Courier New',monospace;color:${r.correct?'var(--correct)':'var(--wrong)'}">
+        ${r.correct?r.answer:r.userAnswer}
+      </div>
+      ${!r.correct?`<div style="font-size:11px;color:#888;margin-top:3px;font-family:'Courier New',monospace">正解: ${r.answer}</div>`:''}
+    </div>`;
+
+  return`
+    <div class="card">
+      <div class="finish">
+        <div class="finish-icon">🏆</div>
+        <div class="finish-title">クイズ完了！</div>
+        <div class="score-display"><span class="score-big">${score}</span><span class="score-of">/ ${total}</span></div>
+        <div class="score-msg">${msg}</div>
+      </div>
+
+      ${wrongList.length>0?`
+      <div style="margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--wrong);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+          <span>❌</span> 間違えた問題 (${wrongList.length}問)
+        </div>
+        ${wrongList.map(renderRow).join('')}
+      </div>`:''}
+
+      <div style="margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--correct);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+          <span>⭕️</span> 正解した問題 (${correctList.length}問)
+        </div>
+        ${correctList.length>0?correctList.map(renderRow).join(''):'<div style="font-size:13px;color:var(--sub);text-align:center;padding:12px">なし</div>'}
+      </div>
+
+      <button class="btn" onclick="renderStart()">問題数を選んでもう一度</button>
+    </div>`;
+}
+
+// ===================== START SCREEN =====================
+function renderStart(){
+  selectedCount=0;selectedOrder='random';selectedStart=203;
+  const counts=[5,10,15,20,25,30,35,38];
+  const allIds=ALL_Q.map(q=>q.id);
+  const app=document.getElementById('app');
+  app.innerHTML=`
+    <div class="card start-screen">
+      <div class="start-title">関係代名詞　並び替えクイズ</div>
+      <div class="start-sub">203〜240番　全38問収録</div>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:8px;text-align:center">出題順を選んでください</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+        <button class="count-btn active" id="orderRandom" onclick="selectOrder('random')">🔀 ランダム</button>
+        <button class="count-btn" id="orderOrder" onclick="selectOrder('order')">📋 番号順</button>
+      </div>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:8px;text-align:center">開始番号を選んでください</div>
+      <select id="startSelect" onchange="selectStart(+this.value)" style="width:100%;padding:11px 12px;font-size:14px;font-weight:600;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--primary);margin-bottom:18px;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22><path fill=%22%233949ab%22 d=%22M6 8L1 3h10z%22/></svg>');background-repeat:no-repeat;background-position:right 12px center">
+        ${allIds.map(id=>`<option value="${id}">No.${id}〜</option>`).join('')}
+      </select>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:8px;text-align:center">問題数を選んでください</div>
+      <div class="count-grid">${counts.map(n=>`<button class="count-btn" data-n="${n}" onclick="selectCount(${n})">${n}問${n===38?'（全問）':''}</button>`).join('')}</div>
+      <button class="start-btn" id="startBtn" disabled onclick="startQuiz()">スタート</button>
+    </div>`;
+}
+
+function selectStart(id){
+  selectedStart=id;
+}
+
+function selectOrder(order){
+  selectedOrder=order;
+  document.getElementById('orderRandom').classList.toggle('active',order==='random');
+  document.getElementById('orderOrder').classList.toggle('active',order==='order');
+}
+
+function selectCount(n){
+  selectedCount=n;
+  document.querySelectorAll('.count-btn[data-n]').forEach(b=>b.classList.toggle('active',+b.dataset.n===n));
+  document.getElementById('startBtn').disabled=false;
+}
+
+renderStart();
+</script>
+</body>
+</html>
