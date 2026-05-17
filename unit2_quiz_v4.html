@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 2 Practice Quiz</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: sans-serif; background: #f5f5f3; color: #1a1a1a; padding: 1.5rem; max-width: 700px; margin: 0 auto; }
+
+  .settings-card { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+  .settings-title { font-size: 20px; font-weight: 500; margin-bottom: 0.25rem; }
+  .settings-sub { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
+  .setting-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.6px; color: #888; margin-bottom: 0.6rem; }
+  .toggle-row { display: flex; gap: 8px; margin-bottom: 1.25rem; }
+  .toggle-btn { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; color: #555; text-align: center; transition: all 0.12s; }
+  .toggle-btn.active { background: #e6f1fb; border-color: #378ADD; color: #185FA5; font-weight: 500; }
+  .toggle-btn:hover:not(.active) { background: #f5f5f5; }
+  .count-row { display: flex; align-items: center; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .count-btn { padding: 8px 14px; border: 1px solid #ccc; border-radius: 8px; background: #fff; cursor: pointer; font-size: 13px; color: #555; transition: all 0.12s; }
+  .count-btn.active { background: #e6f1fb; border-color: #378ADD; color: #185FA5; font-weight: 500; }
+  .count-btn:hover:not(.active) { background: #f5f5f5; }
+  .count-custom { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555; }
+  .count-custom input { width: 60px; padding: 7px 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; text-align: center; }
+  .section-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.25rem; }
+  .section-check { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: background 0.1s; user-select: none; }
+  .section-check:hover { background: #f8f8f8; }
+  .section-check.checked { background: #f0f8ff; border-color: #b5d4f4; }
+  .section-check input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: #378ADD; flex-shrink: 0; }
+  .section-check-label { flex: 1; font-size: 14px; color: #333; }
+  .section-check-count { font-size: 12px; color: #999; }
+  .section-check.checked .section-check-label { color: #185FA5; font-weight: 500; }
+  .avail-count { font-size: 13px; color: #666; margin-bottom: 1rem; padding: 8px 12px; background: #f5f5f5; border-radius: 6px; }
+  .avail-count span { font-weight: 500; color: #1D9E75; }
+  .start-btn { width: 100%; padding: 14px; background: #1D9E75; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.12s; }
+  .start-btn:hover { background: #0F6E56; }
+  .start-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+  .top-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
+  .progress-bg { flex: 1; background: #e0e0e0; border-radius: 4px; height: 6px; }
+  .progress-fill { background: #1D9E75; height: 6px; border-radius: 4px; transition: width 0.3s; }
+  .q-count { font-size: 12px; color: #888; white-space: nowrap; }
+  .back-btn { font-size: 12px; color: #888; cursor: pointer; white-space: nowrap; padding: 4px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fff; }
+  .back-btn:hover { background: #f5f5f5; }
+
+  .section-header { font-size: 11px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; color: #888; padding: 4px 10px; background: #ececec; border-radius: 4px; display: inline-block; margin-bottom: 1rem; }
+  .q-word { font-size: 24px; font-weight: 500; text-align: center; padding: 1rem; background: #efefef; border-radius: 8px; margin-bottom: 1.25rem; }
+  .q-def { font-size: 15px; color: #444; padding: 0.85rem 1rem; background: #f0f0f0; border-radius: 8px; margin-bottom: 1.25rem; line-height: 1.6; border-left: 3px solid #ccc; }
+  .q-text { font-size: 16px; font-weight: 500; margin-bottom: 0.5rem; line-height: 1.8; }
+  .hint { font-size: 12px; color: #888; margin-bottom: 1rem; }
+  .choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem; }
+  .choice-btn { text-align: left; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; color: #1a1a1a; line-height: 1.55; transition: background 0.12s; }
+  .choice-btn:hover:not(:disabled) { background: #f0f0f0; }
+  .choice-btn.correct { background: #EAF3DE; border-color: #639922; color: #27500A; }
+  .choice-btn.wrong   { background: #FCEBEB; border-color: #E24B4A; color: #501313; }
+  .choice-btn.reveal  { background: #EAF3DE; border-color: #639922; color: #27500A; }
+  .feedback { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 1rem; line-height: 1.7; }
+  .feedback.correct { background: #EAF3DE; color: #27500A; }
+  .feedback.wrong   { background: #FCEBEB; color: #501313; }
+  .feedback.partial { background: #FAEEDA; color: #633806; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; }
+  .btn { padding: 8px 18px; border: 1px solid #ccc; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; color: #1a1a1a; }
+  .btn:hover { background: #f0f0f0; }
+  .btn.primary { background: #1D9E75; border-color: #1D9E75; color: #fff; }
+  .btn.primary:hover { background: #0F6E56; }
+
+  .drag-area { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+  .drag-item { padding: 6px 14px; border: 1px solid #ccc; border-radius: 20px; background: #fff; cursor: pointer; font-size: 13px; user-select: none; }
+  .drag-item.placed   { opacity: 0.3; pointer-events: none; }
+  .drag-item.selected { background: #e6f1fb; border-color: #378ADD; color: #185FA5; }
+  .pos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+  .pos-box { border: 1px solid #ccc; border-radius: 8px; padding: 10px; min-height: 90px; cursor: pointer; }
+  .pos-box:hover { border-color: #378ADD; background: #f8fbff; }
+  .pos-label { font-size: 11px; font-weight: 500; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pos-slot { display: flex; flex-wrap: wrap; gap: 6px; min-height: 36px; }
+  .placed-item { display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; background: #e6f1fb; border: 1px solid #378ADD; font-size: 12px; color: #185FA5; cursor: pointer; }
+  .placed-item.correct { background: #EAF3DE; border-color: #639922; color: #27500A; }
+  .placed-item.wrong   { background: #FCEBEB; border-color: #E24B4A; color: #501313; }
+
+  .result-card { padding: 2rem 0; }
+  .result-top { text-align: center; margin-bottom: 1.5rem; }
+  .result-score { font-size: 52px; font-weight: 500; color: #1D9E75; }
+  .result-label { font-size: 14px; color: #888; }
+  .result-pct { font-size: 18px; font-weight: 500; margin-bottom: 1rem; }
+  .score-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .score-bar-bg { flex: 1; background: #e0e0e0; border-radius: 4px; height: 8px; }
+  .score-bar-fill { background: #1D9E75; height: 8px; border-radius: 4px; }
+  .score-bar-fill.mid { background: #EF9F27; }
+  .score-bar-fill.low { background: #E24B4A; }
+  .wrong-list { margin-top: 1.5rem; }
+  .wrong-list h3 { font-size: 13px; font-weight: 500; color: #555; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e0e0e0; }
+  .wrong-item { padding: 10px 14px; border-left: 3px solid #E24B4A; margin-bottom: 8px; background: #fafafa; border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.7; }
+  .wrong-item strong { display: block; margin-bottom: 2px; font-size: 13px; color: #333; }
+  .result-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const WORDS = {
+  // --- Unit 2 original 13 ---
+  "confident":    { def: "sure that you are correct or have the ability to do things well", pos: "adj" },
+  "consider":     { def: "to think about something carefully before you make a choice", pos: "v" },
+  "creative":     { def: "showing imagination and having the ability to think of new ideas", pos: "adj" },
+  "dangerous":    { def: "not safe; likely to cause harm or problems", pos: "adj" },
+  "difference":   { def: "a way that two people or things are not the same", pos: "n" },
+  "everywhere":   { def: "in or to all places", pos: "adv" },
+  "get along":    { def: "to have a friendly relationship with someone", pos: "v" },
+  "independent":  { def: "able to do things by yourself without help from other people", pos: "adj" },
+  "in general":   { def: "usually; in most cases", pos: "adv" },
+  "share":        { def: "to let someone else use something of yours", pos: "v" },
+  "similar":      { def: "almost the same", pos: "adj" },
+  "smart":        { def: "intelligent; able to learn information easily", pos: "adj" },
+  "wonder":       { def: "to think and ask yourself questions about something", pos: "v" },
+  // --- New 7 words ---
+  "angry":        { def: "having strong bad feelings about something", pos: "adj" },
+  "argue":        { def: "to disagree with someone, sometimes in an angry way", pos: "v" },
+  "argument":     { def: "a fight with words", pos: "n" },
+  "attention":    { def: "listening to, watching, or thinking about something carefully", pos: "n" },
+  "be born":      { def: "to begin life (as a person or animal)", pos: "v" },
+  "careful":      { def: "trying not to make mistakes, do something wrong, or hurt anyone", pos: "adj" },
+  "chore":        { def: "a small job you do regularly, like cleaning at home", pos: "n" }
+};
+
+const SENTENCES = {
+  "confident":   "She stood up and spoke in front of the class. She seemed very _____ about her answer.",
+  "consider":    "Please _____ all the options before you make your final decision.",
+  "creative":    "He designed a completely new logo. He is really _____ and full of ideas.",
+  "dangerous":   "Don't go near that road at night. It can be very _____ for pedestrians.",
+  "difference":  "Can you explain the _____ between a city and a town?",
+  "everywhere":  "I looked _____ for my keys, but I couldn't find them.",
+  "get along":   "My two cats _____ well. They sleep together every night.",
+  "independent": "After moving out, she became more _____ and started cooking for herself.",
+  "in general":  "_____, older siblings tend to be more responsible than younger ones.",
+  "share":       "Would you like to _____ this pizza with me? It's too much for one person.",
+  "similar":     "Their tastes in music are very _____. They both love jazz.",
+  "smart":       "He finished the math test in ten minutes. He's really _____.",
+  "wonder":      "I often _____ why some people are more successful than others.",
+  "angry":       "She didn't say anything, but I could tell she was really _____ about what happened.",
+  "argue":       "The two brothers often _____ about whose turn it is to do the dishes.",
+  "argument":    "They had a big _____ last night and didn't speak to each other this morning.",
+  "attention":   "Please pay _____ to the instructions before you start the test.",
+  "be born":     "She _____ in Tokyo, but she grew up in Osaka.",
+  "careful":     "Be _____ when you cross the street — there's a lot of traffic.",
+  "chore":       "Taking out the trash is my least favorite _____ at home."
+};
+
+const POS_CATEGORIES = {
+  "動詞 (Verb)":             ["consider","get along","share","wonder","argue","be born"],
+  "名詞 (Noun)":             ["difference","argument","attention","chore"],
+  "形容詞 (Adjective)":      ["confident","creative","dangerous","independent","similar","smart","angry","careful"],
+  "副詞・その他 (Adv/Other)": ["everywhere","in general"]
+};
+
+const WL = Object.keys(WORDS);
+
+const SECTION_DEFS = [
+  { id:"meaning4",  label:"英語 → 意味",  desc:"単語を見て正しい定義を選ぶ",    count: WL.length },
+  { id:"def2word",  label:"意味 → 英語",  desc:"定義を見て正しい単語を選ぶ",    count: WL.length },
+  { id:"refers",    label:"refers to",    desc:"〇〇 refers to _____ 形式",     count: WL.length },
+  { id:"fillblank", label:"英文穴埋め",   desc:"文脈に合う単語を選ぶ",          count: WL.length },
+  { id:"pos",       label:"品詞分類",     desc:"全単語を品詞ごとに分類する",    count: 1 }
+];
+
+// ---- state ----
+let screen = 'settings';
+let settings = {
+  order: 'random',
+  count: 'all',
+  customCount: 20,
+  sections: new Set(['meaning4','def2word','refers','fillblank','pos'])
+};
+let quizQs = [], current = 0, score = 0, answeredFlags = [], wrongs = [];
+let posPlaced = {}, selectedWord = null;
+
+// ---- helpers ----
+function shuffle(arr) {
+  let a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function otherDefs(w, n)  { return shuffle(WL.filter(x=>x!==w)).slice(0,n).map(o=>WORDS[o].def); }
+function otherWords(w, n) { return shuffle(WL.filter(x=>x!==w)).slice(0,n); }
+function make4(correct, distractors) {
+  const pool = shuffle([correct, ...distractors.slice(0,3)]);
+  return { choices: pool, answer: pool.indexOf(correct) };
+}
+function esc(s) { return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+// ---- build questions ----
+function buildAllQuestions() {
+  const all = [];
+  if (settings.sections.has('meaning4')) WL.forEach(w => {
+    const {choices,answer} = make4(WORDS[w].def, otherDefs(w,3));
+    all.push({ type:'meaning4', section:'英語 → 意味', word:w, choices, answer });
+  });
+  if (settings.sections.has('def2word')) WL.forEach(w => {
+    const {choices,answer} = make4(w, otherWords(w,3));
+    all.push({ type:'def2word', section:'意味 → 英語', def:WORDS[w].def, word:w, choices, answer });
+  });
+  if (settings.sections.has('refers')) WL.forEach(w => {
+    const {choices,answer} = make4(WORDS[w].def, otherDefs(w,3));
+    all.push({ type:'refers', section:'refers to', word:w, choices, answer });
+  });
+  if (settings.sections.has('fillblank')) WL.forEach(w => {
+    const {choices,answer} = make4(w, otherWords(w,3));
+    all.push({ type:'fillblank', section:'英文穴埋め', sentence:SENTENCES[w], word:w, def:WORDS[w].def, choices, answer });
+  });
+
+  const posQ = settings.sections.has('pos') ? [{
+    type:'pos', section:'品詞分類',
+    words: shuffle([...WL]),
+    categories: POS_CATEGORIES
+  }] : [];
+
+  const nonPos = settings.order === 'random' ? shuffle(all) : all;
+
+  // apply count limit
+  let pool = [...nonPos, ...posQ];
+  if (settings.count !== 'all') {
+    const n = parseInt(settings.count === 'custom' ? settings.customCount : settings.count);
+    const posItems = pool.filter(q=>q.type==='pos');
+    const nonPosItems = pool.filter(q=>q.type!=='pos');
+    const take = Math.max(0, n - posItems.length);
+    pool = [...nonPosItems.slice(0, take), ...posItems];
+  }
+  return pool;
+}
+
+function calcAvailable() {
+  let n = 0;
+  SECTION_DEFS.forEach(s => { if (settings.sections.has(s.id)) n += s.count; });
+  return n;
+}
+function getDisplayCount(avail) {
+  if (settings.count === 'all') return avail;
+  if (settings.count === 'custom') return Math.min(parseInt(settings.customCount)||1, avail);
+  return Math.min(parseInt(settings.count), avail);
+}
+
+// ---- render ----
+function render() {
+  if (screen==='settings') renderSettings();
+  else if (screen==='quiz') renderQuiz();
+  else renderResult();
+}
+
+function renderSettings() {
+  const avail = calcAvailable();
+  const countOpts = [10, 20, 40, avail];
+  const uniq = [...new Set(countOpts)].filter(n => n <= avail && n > 0);
+  document.getElementById('app').innerHTML = `
+    <div class="settings-card">
+      <div class="settings-title">Unit 2 練習テスト</div>
+      <div class="settings-sub">全${WL.length}単語 ／ 最大${SECTION_DEFS.reduce((a,s)=>a+s.count,0)}問</div>
+
+      <div class="setting-label">出題順</div>
+      <div class="toggle-row">
+        <div class="toggle-btn ${settings.order==='random'?'active':''}" onclick="setOrder('random')">🔀 ランダム</div>
+        <div class="toggle-btn ${settings.order==='order'?'active':''}" onclick="setOrder('order')">📋 セクション順</div>
+      </div>
+
+      <div class="setting-label">問題数</div>
+      <div class="count-row">
+        ${uniq.map(n =>
+          `<div class="count-btn ${(settings.count==n||(n===avail&&settings.count==='all'))?'active':''}" onclick="setCount('${n===avail?'all':n}')">${n===avail?'全問 ('+avail+')':n+'問'}</div>`
+        ).join('')}
+        <div class="count-btn ${settings.count==='custom'?'active':''}" onclick="setCount('custom')">指定</div>
+        ${settings.count==='custom'
+          ? `<div class="count-custom"><input type="number" min="1" max="${avail}" value="${settings.customCount}" oninput="setCustomCount(this.value)"> 問</div>`
+          : ''}
+      </div>
+
+      <div class="setting-label">出題セクション</div>
+      <div class="section-list">
+        ${SECTION_DEFS.map(s=>`
+          <label class="section-check ${settings.sections.has(s.id)?'checked':''}" onclick="toggleSection('${s.id}')">
+            <input type="checkbox" ${settings.sections.has(s.id)?'checked':''} onclick="event.stopPropagation();toggleSection('${s.id}')">
+            <span class="section-check-label">${s.label}　<span style="font-weight:400;font-size:12px;color:#888">${s.desc}</span></span>
+            <span class="section-check-count">${s.count}問</span>
+          </label>`).join('')}
+      </div>
+
+      <div class="avail-count">選択中の合計：<span>${avail}問</span>　／　出題数：<span>${getDisplayCount(avail)}問</span></div>
+      <button class="start-btn" onclick="startQuiz()" ${avail===0?'disabled':''}>スタート →</button>
+    </div>`;
+}
+
+function setOrder(v)       { settings.order = v; renderSettings(); }
+function setCount(v)       { settings.count = v; renderSettings(); }
+function setCustomCount(v) { settings.customCount = parseInt(v)||1; renderSettings(); }
+function toggleSection(id) {
+  if (settings.sections.has(id)) { if (settings.sections.size > 1) settings.sections.delete(id); }
+  else settings.sections.add(id);
+  renderSettings();
+}
+
+function startQuiz() {
+  quizQs = buildAllQuestions();
+  current = 0; score = 0; answeredFlags = []; wrongs = [];
+  posPlaced = {}; selectedWord = null;
+  screen = 'quiz'; render();
+}
+
+function renderQuiz() {
+  const q = quizQs[current];
+  const pct = (current / quizQs.length) * 100;
+  document.getElementById('app').innerHTML = `
+    <div class="top-bar">
+      <button class="back-btn" onclick="goSettings()">← 設定</button>
+      <div class="progress-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="q-count">${current+1} / ${quizQs.length}</div>
+    </div>
+    <div id="qbody"></div>`;
+  renderQBody(q);
+}
+
+function renderQBody(q) {
+  const area = document.getElementById('qbody');
+  if (!area) return;
+  q.type === 'pos' ? renderPOS(q, area) : renderChoice(q, area);
+}
+
+function renderChoice(q, area) {
+  const shuffled = shuffle(q.choices.map((c,i)=>({text:c,orig:i})));
+  let topHtml = '';
+  if (q.type==='meaning4') {
+    topHtml = `<div class="q-word">${q.word}</div><p class="hint">この単語の意味として正しいものを選んでください</p>`;
+  } else if (q.type==='def2word') {
+    topHtml = `<div class="q-def">${q.def}</div><p class="hint">この意味を表す単語を選んでください</p>`;
+  } else if (q.type==='refers') {
+    topHtml = `<div class="q-text"><span style="font-weight:600;font-size:18px">${q.word}</span> refers to _____.</div><p class="hint">正しい意味を選んでください</p>`;
+  } else if (q.type==='fillblank') {
+    const disp = q.sentence.replace('_____','<span style="background:#fff3cd;padding:0 4px;border-radius:3px;font-weight:600">_____</span>');
+    topHtml = `<div class="q-text" style="line-height:2">${disp}</div><p class="hint">空欄に入る単語を選んでください</p>`;
+  }
+  area.innerHTML = `<span class="section-header">${q.section}</span>` + topHtml +
+    `<div class="choices">` +
+    shuffled.map((c,i)=>
+      `<button class="choice-btn" data-orig="${c.orig}" onclick="pickChoice(${c.orig},${q.answer},this)">${String.fromCharCode(65+i)}. ${c.text}</button>`
+    ).join('') +
+    `</div><div id="feedback"></div>` +
+    `<div class="nav-row"><span></span><button class="btn" id="nextbtn" onclick="nextQ()" style="display:none">${current+1<quizQs.length?'次の問題 →':'結果を見る →'}</button></div>`;
+}
+
+function pickChoice(orig, answer, btn) {
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.disabled = true;
+    if (parseInt(b.getAttribute('data-orig'))===answer) b.classList.add('reveal');
+  });
+  const q = quizQs[current];
+  const fb = document.getElementById('feedback');
+  if (orig===answer) {
+    btn.classList.remove('reveal'); btn.classList.add('correct');
+    score++;
+    fb.className = 'feedback correct';
+    fb.innerHTML = '正解！' + (q.type==='fillblank' ? `　<small>${q.word}：${q.def}</small>` : '');
+  } else {
+    btn.classList.add('wrong');
+    fb.className = 'feedback wrong';
+    fb.innerHTML = '不正解。正解は緑色です。' + (q.type==='fillblank' ? `　<small>正解：${q.word}（${q.def}）</small>` : '');
+    wrongs.push(q);
+  }
+  answeredFlags[current] = true;
+  document.getElementById('nextbtn').style.display = 'inline-block';
+}
+
+function renderPOS(q, area) {
+  if (!posPlaced[current]) {
+    posPlaced[current] = {};
+    Object.keys(q.categories).forEach(c => posPlaced[current][c] = []);
+  }
+  const placed = posPlaced[current];
+  const allPlaced = Object.values(placed).flat();
+  const isDone = answeredFlags[current];
+
+  area.innerHTML = `<span class="section-header">${q.section}</span>` +
+    `<div class="q-text">品詞分類</div>` +
+    `<p class="hint">単語をタップして選び、カテゴリをタップして配置（全${q.words.length}単語）</p>` +
+    `<div class="drag-area">` +
+    q.words.map(w =>
+      `<div class="drag-item${allPlaced.includes(w)?' placed':''}" onclick="selectWord(this,'${esc(w)}')">${w}</div>`
+    ).join('') +
+    `</div><div class="pos-grid">` +
+    Object.keys(placed).map(cat =>
+      `<div class="pos-box" onclick="placeWord('${esc(cat)}')">
+        <div class="pos-label">${cat}</div>
+        <div class="pos-slot">
+          ${placed[cat].map(w => {
+            let cls = 'placed-item';
+            if (isDone) cls += q.categories[cat]&&q.categories[cat].includes(w)?' correct':' wrong';
+            return `<div class="${cls}" onclick="removeItem(event,'${esc(cat)}','${esc(w)}')">${w}${isDone?'':' ✕'}</div>`;
+          }).join('')}
+        </div>
+      </div>`
+    ).join('') +
+    `</div><div id="feedback"></div>` +
+    `<div class="nav-row">` +
+    (isDone
+      ? `<span></span><button class="btn" onclick="nextQ()">${current+1<quizQs.length?'次の問題 →':'結果を見る →'}</button>`
+      : `<button class="btn" onclick="checkPOS()">答え合わせ</button><span></span>`
+    ) + `</div>`;
+}
+
+function selectWord(el, w) {
+  if (answeredFlags[current]) return;
+  document.querySelectorAll('.drag-item').forEach(d=>d.classList.remove('selected'));
+  selectedWord = w; el.classList.add('selected');
+}
+function placeWord(cat) {
+  if (!selectedWord||answeredFlags[current]) return;
+  if (Object.values(posPlaced[current]).flat().includes(selectedWord)) return;
+  posPlaced[current][cat].push(selectedWord);
+  selectedWord = null;
+  renderPOS(quizQs[current], document.getElementById('qbody'));
+}
+function removeItem(e, cat, w) {
+  e.stopPropagation();
+  if (answeredFlags[current]) return;
+  posPlaced[current][cat] = posPlaced[current][cat].filter(x=>x!==w);
+  renderPOS(quizQs[current], document.getElementById('qbody'));
+}
+function checkPOS() {
+  const q = quizQs[current];
+  const placed = posPlaced[current];
+  const allPlaced = Object.values(placed).flat();
+  const unplaced = q.words.filter(w=>!allPlaced.includes(w));
+  let correct = 0;
+  allPlaced.forEach(w => {
+    const cat = Object.keys(placed).find(c=>placed[c].includes(w));
+    if (q.categories[cat]&&q.categories[cat].includes(w)) correct++;
+  });
+  answeredFlags[current] = true;
+  const fb = document.getElementById('feedback');
+  if (correct===q.words.length && unplaced.length===0) {
+    score++;
+    fb.className = 'feedback correct';
+    fb.textContent = `全問正解！(${correct}/${q.words.length})`;
+  } else {
+    const lines = Object.keys(q.categories).map(c=>`${c}：${q.categories[c].join('、')}`).join('<br>');
+    fb.className = 'feedback partial';
+    fb.innerHTML = `${correct}/${q.words.length} 正解。` +
+      (unplaced.length ? `未配置：${unplaced.join('、')}<br>` : '') +
+      `<br><small>正解：<br>${lines}</small>`;
+    wrongs.push(q);
+  }
+  renderPOS(q, document.getElementById('qbody'));
+}
+
+function nextQ() {
+  current++;
+  if (current >= quizQs.length) { screen='result'; renderResult(); }
+  else renderQuiz();
+}
+function goSettings() { screen='settings'; render(); }
+
+function renderResult() {
+  const pct = Math.round((score/quizQs.length)*100);
+  const unique = [...new Set(wrongs)];
+  const usedSections = SECTION_DEFS.filter(s=>quizQs.some(q=>q.type===s.id));
+
+  const barsHtml = usedSections.map(s => {
+    const qs = quizQs.filter(q=>q.type===s.id);
+    const w = unique.filter(q=>q.type===s.id).length;
+    const c = qs.length - w, t = qs.length;
+    const p = Math.round((c/t)*100);
+    const cls = p>=80?'':p>=50?' mid':' low';
+    return `<div class="score-bar">
+      <span style="min-width:120px;font-size:13px;color:#555">${s.label}</span>
+      <div class="score-bar-bg"><div class="score-bar-fill${cls}" style="width:${p}%"></div></div>
+      <span style="min-width:50px;text-align:right;font-size:13px;color:#555">${c}/${t}</span>
+    </div>`;
+  }).join('');
+
+  let wrongHtml = '';
+  if (unique.length > 0) {
+    wrongHtml = `<div class="wrong-list"><h3>復習リスト（間違えた問題）</h3>` +
+      unique.map(w => {
+        if (w.type==='meaning4')  return `<div class="wrong-item"><strong>${w.word}</strong>意味：${w.choices[w.answer]}</div>`;
+        if (w.type==='def2word')  return `<div class="wrong-item"><strong>「${w.def}」</strong>正解：${w.choices[w.answer]}</div>`;
+        if (w.type==='refers')    return `<div class="wrong-item"><strong>${w.word} refers to _____.</strong>${w.choices[w.answer]}</div>`;
+        if (w.type==='fillblank') return `<div class="wrong-item"><strong>穴埋め</strong>${w.sentence.replace('_____','[ '+w.word+' ]')}<br><small style="color:#666">${w.def}</small></div>`;
+        if (w.type==='pos') {
+          const lines = Object.keys(w.categories).map(c=>`${c}：${w.categories[c].join('、')}`).join('<br>');
+          return `<div class="wrong-item"><strong>品詞分類の正解</strong><small>${lines}</small></div>`;
+        }
+        return '';
+      }).join('') + `</div>`;
+  } else {
+    wrongHtml = `<p style="color:#1D9E75;font-size:14px;margin-top:1rem;text-align:center">全問正解！完璧です！</p>`;
+  }
+
+  document.getElementById('app').innerHTML = `<div class="result-card">
+    <div class="result-top">
+      <div class="result-score">${score} / ${quizQs.length}</div>
+      <div class="result-label">正答数</div>
+      <div class="result-pct">${pct}%</div>
+    </div>
+    <div style="margin-bottom:1.5rem">${barsHtml}</div>
+    <div class="result-btns">
+      <button class="btn primary" onclick="retryWrong()">間違えた問題だけやり直す</button>
+      <button class="btn" onclick="goSettings()">設定に戻る</button>
+    </div>
+    ${wrongHtml}
+  </div>`;
+}
+
+function retryWrong() {
+  const unique = [...new Set(wrongs)];
+  if (unique.length===0) return;
+  quizQs = settings.order==='random' ? shuffle(unique) : unique;
+  current = 0; score = 0; answeredFlags = []; wrongs = [];
+  posPlaced = {}; selectedWord = null;
+  screen = 'quiz'; renderQuiz();
+}
+
+render();
+</script>
+</body>
+</html>
