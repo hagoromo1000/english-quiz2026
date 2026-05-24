@@ -111,6 +111,10 @@
   .wrong-item strong { display: block; margin-bottom: 2px; font-size: 13px; color: #333; }
   .result-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
   .divider { height: 1px; background: #eee; margin: 1rem 0; }
+  .save-btn { font-size: 16px; background: none; border: none; cursor: pointer; padding: 2px 4px; color: #888; flex-shrink: 0; }
+  .save-btn:hover { color: #333; }
+  .resume-btn { width: 100%; margin-top: 10px; padding: 12px 14px; background: #fff; color: #1D9E75; border: 1.5px solid #1D9E75; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.12s; text-align: left; line-height: 1.5; }
+  .resume-btn:hover { background: #f0faf6; }
 </style>
 </head>
 <body>
@@ -170,6 +174,33 @@ const POS_CATEGORIES = {
   "副詞・その他 (Adv/Other)": ["everywhere","in general"]
 };
 
+// 品詞ラベル（日本語）
+const POS_LABEL = { adj:"形容詞", v:"動詞", n:"名詞", adv:"副詞・その他" };
+
+// 各単語の例文（解説用・穴埋めとは別）
+const EXAMPLES = {
+  "confident":   { en: "She gave a confident speech in front of 500 people.", ja: "彼女は500人の前で自信を持ってスピーチをした。" },
+  "consider":    { en: "You should consider both sides before deciding.",      ja: "決める前に両方の側面を考慮すべきだ。" },
+  "creative":    { en: "The creative student drew something no one expected.", ja: "その創造的な生徒は誰も予想しないものを描いた。" },
+  "dangerous":   { en: "Swimming alone in the ocean can be dangerous.",        ja: "一人で海を泳ぐのは危険なことがある。" },
+  "difference":  { en: "There is a big difference between the two brothers.",  ja: "その2人の兄弟の間には大きな違いがある。" },
+  "everywhere":  { en: "Smartphones are everywhere these days.",               ja: "最近、スマートフォンはどこにでもある。" },
+  "get along":   { en: "Do you get along with your classmates?",               ja: "クラスメートとうまくやっていますか？" },
+  "independent": { en: "He is independent and doesn't ask for help.",          ja: "彼は自立していて、助けを求めない。" },
+  "in general":  { en: "In general, people prefer warm weather.",              ja: "一般的に、人々は暖かい気候を好む。" },
+  "share":       { en: "Let's share the cost of the trip equally.",            ja: "旅行の費用を均等に分担しよう。" },
+  "similar":     { en: "The twins have similar personalities.",                ja: "その双子は似たような性格を持っている。" },
+  "smart":       { en: "She is smart enough to solve the problem quickly.",    ja: "彼女は問題を素早く解けるほど賢い。" },
+  "wonder":      { en: "I wonder if he will come to the party.",               ja: "彼がパーティーに来るかどうか気になる。" },
+  "angry":       { en: "He was angry when he heard the news.",                 ja: "彼はそのニュースを聞いて怒った。" },
+  "argue":       { en: "The couple argued about money every week.",            ja: "そのカップルは毎週お金のことで口論した。" },
+  "argument":    { en: "They had a long argument about politics.",             ja: "彼らは政治について長い口論をした。" },
+  "attention":   { en: "The teacher asked the students to pay attention.",     ja: "先生は生徒たちに注意を払うよう求めた。" },
+  "be born":     { en: "He was born in a small town in Canada.",               ja: "彼はカナダの小さな町で生まれた。" },
+  "careful":     { en: "Be careful not to make the same mistake again.",       ja: "同じ間違いを繰り返さないよう気をつけて。" },
+  "chore":       { en: "Washing dishes is a chore I do every evening.",       ja: "皿洗いは毎晩やる家事だ。" }
+};
+
 const WL = Object.keys(WORDS);
 
 const SECTION_DEFS = [
@@ -215,6 +246,48 @@ function getWeakWords(threshold = 0.4, minAttempts = 1) {
 }
 function clearStats() {
   try { localStorage.removeItem(STATS_KEY); } catch(e) {}
+}
+
+// ===================== SESSION SAVE/RESTORE =====================
+const SESSION_KEY = 'unit2_quiz_session_v1';
+
+function saveSession() {
+  try {
+    const data = {
+      quizQs, current, score,
+      answeredFlags, sessionWrongs,
+      posPlaced, isWeakMode,
+      settings: { ...settings, sections: [...settings.sections] },
+      savedAt: new Date().toLocaleString('ja-JP')
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    return data.savedAt;
+  } catch(e) { return null; }
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+}
+
+function restoreSession(data) {
+  quizQs        = data.quizQs;
+  current       = data.current;
+  score         = data.score;
+  answeredFlags = data.answeredFlags;
+  sessionWrongs = data.sessionWrongs;
+  posPlaced     = data.posPlaced || {};
+  isWeakMode    = data.isWeakMode || false;
+  settings.order        = data.settings.order;
+  settings.count        = data.settings.count;
+  settings.customCount  = data.settings.customCount;
+  settings.sections     = new Set(data.settings.sections);
 }
 
 // ===================== HELPERS =====================
@@ -306,6 +379,7 @@ function renderSettings() {
   const stats = loadStats();
   const weakWords = getWeakWords(0.4, 1);
   const hasStats = Object.keys(stats).length > 0;
+  const savedSession = loadSession();
 
   // stats panel items: top 8 by error rate
   const statsItems = WL
@@ -374,6 +448,7 @@ function renderSettings() {
       <button class="weak-btn" onclick="startQuiz(true)" ${weakWords.length===0?'disabled':''}>
         🎯 間違えやすい問題を解く ${weakWords.length>0?'（対象：'+weakWords.length+'単語）':'（記録なし）'}
       </button>
+      ${savedSession ? `<button class="resume-btn" onclick="resumeSession()">↩ 続きから再開（${savedSession.current+1}/${savedSession.quizQs.length}問目・${savedSession.savedAt}）</button>` : ''}
     </div>
 
     <div class="card">
@@ -400,6 +475,7 @@ function startQuiz(weakMode) {
   quizQs = buildQuestions(wordList);
   current = 0; score = 0; answeredFlags = []; sessionWrongs = [];
   posPlaced = {}; selectedWord = null;
+  clearSession();
   screen = 'quiz'; render();
 }
 
@@ -412,6 +488,7 @@ function renderQuiz() {
       <button class="back-btn" onclick="goSettings()">← 設定</button>
       <div class="progress-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
       <div class="q-count">${current+1} / ${quizQs.length}</div>
+      <button class="save-btn" onclick="pauseAndSave()" title="中断して保存">💾</button>
     </div>
     <div id="qbody"></div>`;
   renderQBody(q);
@@ -457,20 +534,25 @@ function pickChoice(orig, answer, btn) {
   recordAnswer(qStatKey(q), isCorrect);
 
   const fb = document.getElementById('feedback');
+  const w = q.word;
+  const posLabel = POS_LABEL[WORDS[w].pos] || WORDS[w].pos;
+  const explanation = `
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,0,0,0.08);font-size:12px;line-height:1.9">
+      <span style="display:inline-block;padding:1px 7px;border-radius:4px;background:rgba(0,0,0,0.07);font-size:11px;margin-bottom:4px">${posLabel}</span>
+      <div>📖 ${WORDS[w].def}</div>
+      <div>🇯🇵 ${WORDS[w].ja}</div>
+      <div style="margin-top:4px">💬 ${EXAMPLES[w].en}</div>
+      <div style="color:inherit;opacity:0.75">　　${EXAMPLES[w].ja}</div>
+    </div>`;
   if (isCorrect) {
     btn.classList.remove('reveal'); btn.classList.add('correct');
     score++;
-    let extra = '';
-    if (q.type==='fillblank') extra = `<br><small>✅ ${q.word}：${q.def}<br>🇯🇵 ${WORDS[q.word].ja}</small>`;
     fb.className = 'feedback correct';
-    fb.innerHTML = '正解！' + extra;
+    fb.innerHTML = '正解！' + explanation;
   } else {
     btn.classList.add('wrong');
-    let extra = '';
-    if (q.type==='fillblank') extra = `<br><small>正解：${q.word}（${q.def}）<br>🇯🇵 ${WORDS[q.word].ja}</small>`;
-    else if (q.type==='meaning4'||q.type==='refers') extra = `<br><small>🇯🇵 ${WORDS[q.word].ja}</small>`;
     fb.className = 'feedback wrong';
-    fb.innerHTML = '不正解。正解は緑色です。' + extra;
+    fb.innerHTML = '不正解。正解は緑色です。' + explanation;
     sessionWrongs.push(q);
   }
   answeredFlags[current] = true;
@@ -565,6 +647,27 @@ function nextQ() {
   else renderQuiz();
 }
 function goSettings() { screen='settings'; render(); }
+
+function resumeSession() {
+  const data = loadSession();
+  if (!data) return;
+  restoreSession(data);
+  screen = 'quiz';
+  renderQuiz();
+}
+
+function pauseAndSave() {
+  const savedAt = saveSession();
+  if (savedAt) {
+    // show toast
+    const toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.textContent = '💾 保存しました（' + savedAt + '）';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999;white-space:nowrap;box-shadow:0 2px 12px rgba(0,0,0,0.3)';
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity='0'; toast.style.transition='opacity 0.5s'; setTimeout(()=>toast.remove(),500); }, 2500);
+  }
+}
 
 // ===================== RESULT =====================
 function renderResult() {
