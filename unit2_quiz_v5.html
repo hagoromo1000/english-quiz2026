@@ -434,9 +434,7 @@ function renderChoice(q, area) {
     topHtml = `<div class="q-text"><span style="font-weight:600;font-size:18px">${q.word}</span> refers to _____.</div><p class="hint">正しい意味を選んでください</p>`;
   } else if (q.type==='fillblank') {
     const disp = q.sentenceEn.replace('_____','<span style="background:#fff3cd;padding:0 4px;border-radius:3px;font-weight:600">_____</span>');
-    const jaDisp = q.sentenceJa.replace('_____','<span style="font-weight:600;color:#555">_____</span>');
-    topHtml = `<div class="q-text" style="line-height:2">${disp}</div>
-      <div class="q-trans">🇯🇵 ${jaDisp}</div>`;
+    topHtml = `<div class="q-text" style="line-height:2">${disp}</div><p class="hint">空欄に入る単語を選んでください</p>`;
   }
 
   area.innerHTML = `<span class="section-header">${q.section}</span>` + topHtml +
