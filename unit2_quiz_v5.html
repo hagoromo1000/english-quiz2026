@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 2 Practice Quiz</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: sans-serif; background: #f5f5f3; color: #1a1a1a; padding: 1.5rem; max-width: 700px; margin: 0 auto; }
+
+  /* Settings */
+  .card { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+  .settings-title { font-size: 20px; font-weight: 500; margin-bottom: 0.25rem; }
+  .settings-sub { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
+  .setting-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.6px; color: #888; margin-bottom: 0.6rem; margin-top: 1.1rem; }
+  .toggle-row { display: flex; gap: 8px; margin-bottom: 0.25rem; }
+  .toggle-btn { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; color: #555; text-align: center; transition: all 0.12s; }
+  .toggle-btn.active { background: #e6f1fb; border-color: #378ADD; color: #185FA5; font-weight: 500; }
+  .toggle-btn:hover:not(.active) { background: #f5f5f5; }
+  .count-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 0.25rem; }
+  .count-btn { padding: 8px 14px; border: 1px solid #ccc; border-radius: 8px; background: #fff; cursor: pointer; font-size: 13px; color: #555; transition: all 0.12s; }
+  .count-btn.active { background: #e6f1fb; border-color: #378ADD; color: #185FA5; font-weight: 500; }
+  .count-btn:hover:not(.active) { background: #f5f5f5; }
+  .count-custom { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555; }
+  .count-custom input { width: 60px; padding: 7px 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; text-align: center; }
+  .section-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 0.25rem; }
+  .section-check { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: background 0.1s; user-select: none; }
+  .section-check:hover { background: #f8f8f8; }
+  .section-check.checked { background: #f0f8ff; border-color: #b5d4f4; }
+  .section-check input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: #378ADD; flex-shrink: 0; }
+  .section-check-label { flex: 1; font-size: 14px; color: #333; }
+  .section-check-count { font-size: 12px; color: #999; }
+  .section-check.checked .section-check-label { color: #185FA5; font-weight: 500; }
+  .avail-count { font-size: 13px; color: #666; margin: 0.75rem 0; padding: 8px 12px; background: #f5f5f5; border-radius: 6px; }
+  .avail-count span { font-weight: 500; color: #1D9E75; }
+  .start-btn { width: 100%; padding: 14px; background: #1D9E75; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.12s; margin-bottom: 10px; }
+  .start-btn:hover { background: #0F6E56; }
+  .start-btn:disabled { background: #ccc; cursor: not-allowed; }
+  .weak-btn { width: 100%; padding: 12px; background: #fff; color: #E24B4A; border: 1.5px solid #E24B4A; border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.12s; }
+  .weak-btn:hover { background: #fff5f5; }
+  .weak-btn:disabled { border-color: #ccc; color: #ccc; cursor: not-allowed; }
+
+  /* Stats panel */
+  .stats-panel { margin-bottom: 1rem; }
+  .stats-panel h3 { font-size: 13px; font-weight: 500; color: #555; margin-bottom: 8px; }
+  .stats-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+  .stats-word { min-width: 100px; color: #333; font-weight: 500; }
+  .stats-bar-bg { flex: 1; background: #e0e0e0; border-radius: 4px; height: 6px; }
+  .stats-bar-fill { height: 6px; border-radius: 4px; }
+  .stats-rate { min-width: 38px; text-align: right; color: #666; }
+  .stats-attempts { min-width: 50px; text-align: right; color: #aaa; font-size: 11px; }
+  .stats-empty { font-size: 13px; color: #aaa; padding: 8px 0; }
+
+  /* Quiz */
+  .top-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
+  .progress-bg { flex: 1; background: #e0e0e0; border-radius: 4px; height: 6px; }
+  .progress-fill { background: #1D9E75; height: 6px; border-radius: 4px; transition: width 0.3s; }
+  .q-count { font-size: 12px; color: #888; white-space: nowrap; }
+  .back-btn { font-size: 12px; color: #888; cursor: pointer; white-space: nowrap; padding: 4px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fff; }
+  .back-btn:hover { background: #f5f5f5; }
+  .section-header { font-size: 11px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; color: #888; padding: 4px 10px; background: #ececec; border-radius: 4px; display: inline-block; margin-bottom: 1rem; }
+  .q-word { font-size: 24px; font-weight: 500; text-align: center; padding: 1rem; background: #efefef; border-radius: 8px; margin-bottom: 1.25rem; }
+  .q-def { font-size: 15px; color: #444; padding: 0.85rem 1rem; background: #f0f0f0; border-radius: 8px; margin-bottom: 1.25rem; line-height: 1.6; border-left: 3px solid #ccc; }
+  .q-text { font-size: 16px; font-weight: 500; margin-bottom: 0.4rem; line-height: 1.9; }
+  .q-trans { font-size: 13px; color: #888; margin-bottom: 1rem; line-height: 1.7; padding: 6px 10px; background: #fafafa; border-radius: 6px; border-left: 2px solid #ddd; }
+  .hint { font-size: 12px; color: #888; margin-bottom: 1rem; }
+  .choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem; }
+  .choice-btn { text-align: left; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; color: #1a1a1a; line-height: 1.55; transition: background 0.12s; }
+  .choice-btn:hover:not(:disabled) { background: #f0f0f0; }
+  .choice-btn.correct { background: #EAF3DE; border-color: #639922; color: #27500A; }
+  .choice-btn.wrong   { background: #FCEBEB; border-color: #E24B4A; color: #501313; }
+  .choice-btn.reveal  { background: #EAF3DE; border-color: #639922; color: #27500A; }
+  .feedback { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 1rem; line-height: 1.7; }
+  .feedback.correct { background: #EAF3DE; color: #27500A; }
+  .feedback.wrong   { background: #FCEBEB; color: #501313; }
+  .feedback.partial { background: #FAEEDA; color: #633806; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; }
+  .btn { padding: 8px 18px; border: 1px solid #ccc; border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; color: #1a1a1a; }
+  .btn:hover { background: #f0f0f0; }
+  .btn.primary { background: #1D9E75; border-color: #1D9E75; color: #fff; }
+  .btn.primary:hover { background: #0F6E56; }
+
+  /* POS */
+  .drag-area { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
+  .drag-item { padding: 6px 14px; border: 1px solid #ccc; border-radius: 20px; background: #fff; cursor: pointer; font-size: 13px; user-select: none; }
+  .drag-item.placed   { opacity: 0.3; pointer-events: none; }
+  .drag-item.selected { background: #e6f1fb; border-color: #378ADD; color: #185FA5; }
+  .pos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+  .pos-box { border: 1px solid #ccc; border-radius: 8px; padding: 10px; min-height: 90px; cursor: pointer; }
+  .pos-box:hover { border-color: #378ADD; background: #f8fbff; }
+  .pos-label { font-size: 11px; font-weight: 500; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pos-slot { display: flex; flex-wrap: wrap; gap: 6px; min-height: 36px; }
+  .placed-item { display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; background: #e6f1fb; border: 1px solid #378ADD; font-size: 12px; color: #185FA5; cursor: pointer; }
+  .placed-item.correct { background: #EAF3DE; border-color: #639922; color: #27500A; }
+  .placed-item.wrong   { background: #FCEBEB; border-color: #E24B4A; color: #501313; }
+
+  /* Result */
+  .result-card { padding: 1.5rem 0; }
+  .result-top { text-align: center; margin-bottom: 1.5rem; }
+  .result-score { font-size: 52px; font-weight: 500; color: #1D9E75; }
+  .result-label { font-size: 14px; color: #888; }
+  .result-pct { font-size: 18px; font-weight: 500; margin-bottom: 1rem; }
+  .score-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .score-bar-bg { flex: 1; background: #e0e0e0; border-radius: 4px; height: 8px; }
+  .score-bar-fill-r { height: 8px; border-radius: 4px; background: #1D9E75; }
+  .score-bar-fill-r.mid { background: #EF9F27; }
+  .score-bar-fill-r.low { background: #E24B4A; }
+  .wrong-list { margin-top: 1.5rem; }
+  .wrong-list h3 { font-size: 13px; font-weight: 500; color: #555; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e0e0e0; }
+  .wrong-item { padding: 10px 14px; border-left: 3px solid #E24B4A; margin-bottom: 8px; background: #fafafa; border-radius: 0 8px 8px 0; font-size: 13px; line-height: 1.7; }
+  .wrong-item strong { display: block; margin-bottom: 2px; font-size: 13px; color: #333; }
+  .result-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .divider { height: 1px; background: #eee; margin: 1rem 0; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ===================== DATA =====================
+const WORDS = {
+  "confident":    { def: "sure that you are correct or have the ability to do things well",        ja: "自分が正しいと確信している、またはものごとをうまくこなす能力があると確信している", pos: "adj" },
+  "consider":     { def: "to think about something carefully before you make a choice",            ja: "選択をする前に、何かについて注意深く考える", pos: "v" },
+  "creative":     { def: "showing imagination and having the ability to think of new ideas",       ja: "想像力を示し、新しいアイデアを考える能力がある", pos: "adj" },
+  "dangerous":    { def: "not safe; likely to cause harm or problems",                             ja: "安全でない；害や問題を引き起こす可能性がある", pos: "adj" },
+  "difference":   { def: "a way that two people or things are not the same",                       ja: "二人の人、または二つのものが同じでない点", pos: "n" },
+  "everywhere":   { def: "in or to all places",                                                    ja: "あらゆる場所に、またはあらゆる場所へ", pos: "adv" },
+  "get along":    { def: "to have a friendly relationship with someone",                           ja: "（誰かと）友好的な関係を持つ", pos: "v" },
+  "independent":  { def: "able to do things by yourself without help from other people",           ja: "他の人の助けを借りずに、自分でものごとをこなすことができる", pos: "adj" },
+  "in general":   { def: "usually; in most cases",                                                 ja: "通常；ほとんどの場合", pos: "adv" },
+  "share":        { def: "to let someone else use something of yours",                             ja: "自分のものを他の人にも使わせる", pos: "v" },
+  "similar":      { def: "almost the same",                                                        ja: "ほぼ同じ", pos: "adj" },
+  "smart":        { def: "intelligent; able to learn information easily",                          ja: "賢い；情報を簡単に習得できる", pos: "adj" },
+  "wonder":       { def: "to think and ask yourself questions about something",                    ja: "何かについて考え、自分自身に問いかける", pos: "v" },
+  "angry":        { def: "having strong bad feelings about something",                             ja: "何かについて強い不快感を持っている", pos: "adj" },
+  "argue":        { def: "to disagree with someone, sometimes in an angry way",                   ja: "誰かと意見が合わない、時に怒った様子で", pos: "v" },
+  "argument":     { def: "a fight with words",                                                     ja: "言葉による口げんか", pos: "n" },
+  "attention":    { def: "listening to, watching, or thinking about something carefully",          ja: "何かを注意深く聞いたり、見たり、考えたりすること", pos: "n" },
+  "be born":      { def: "to begin life (as a person or animal)",                                  ja: "（人や動物として）生命が始まる；生まれる", pos: "v" },
+  "careful":      { def: "trying not to make mistakes, do something wrong, or hurt anyone",       ja: "間違いを犯したり、悪いことをしたり、誰かを傷つけたりしないよう気をつけている", pos: "adj" },
+  "chore":        { def: "a small job you do regularly, like cleaning at home",                    ja: "家の掃除など、定期的に行う小さな仕事", pos: "n" }
+};
+
+const SENTENCES = {
+  "confident":   { en: "She stood up and spoke in front of the class. She seemed very _____ about her answer.",          ja: "彼女は立ち上がってクラスの前で話した。自分の答えにとても_____そうだった。" },
+  "consider":    { en: "Please _____ all the options before you make your final decision.",                               ja: "最終的な決断をする前に、すべての選択肢を_____ください。" },
+  "creative":    { en: "He designed a completely new logo. He is really _____ and full of ideas.",                        ja: "彼はまったく新しいロゴをデザインした。彼は本当に_____でアイデアが豊富だ。" },
+  "dangerous":   { en: "Don't go near that road at night. It can be very _____ for pedestrians.",                        ja: "夜はあの道に近づかないで。歩行者にとってとても_____になりえる。" },
+  "difference":  { en: "Can you explain the _____ between a city and a town?",                                           ja: "都市と町の_____を説明できますか？" },
+  "everywhere":  { en: "I looked _____ for my keys, but I couldn't find them.",                                          ja: "鍵を_____探したが、見つからなかった。" },
+  "get along":   { en: "My two cats _____ well. They sleep together every night.",                                        ja: "私の2匹の猫はとても仲良く_____。毎晩一緒に眠っている。" },
+  "independent": { en: "After moving out, she became more _____ and started cooking for herself.",                        ja: "家を出た後、彼女はより_____になり、自分で料理をし始めた。" },
+  "in general":  { en: "_____, older siblings tend to be more responsible than younger ones.",                            ja: "_____、年上のきょうだいは年下よりも責任感が強い傾向がある。" },
+  "share":       { en: "Would you like to _____ this pizza with me? It's too much for one person.",                       ja: "このピザを一緒に_____ませんか？一人には多すぎる。" },
+  "similar":     { en: "Their tastes in music are very _____. They both love jazz.",                                      ja: "彼らの音楽の好みはとても_____だ。2人ともジャズが大好きだ。" },
+  "smart":       { en: "He finished the math test in ten minutes. He's really _____.",                                   ja: "彼は数学のテストを10分で終えた。本当に_____だ。" },
+  "wonder":      { en: "I often _____ why some people are more successful than others.",                                  ja: "私はよく、なぜある人たちが他の人より成功するのかと_____。" },
+  "angry":       { en: "She didn't say anything, but I could tell she was really _____ about what happened.",             ja: "彼女は何も言わなかったが、起きたことについて本当に_____のがわかった。" },
+  "argue":       { en: "The two brothers often _____ about whose turn it is to do the dishes.",                          ja: "2人の兄弟は、誰が皿洗いをする番かについてよく_____。" },
+  "argument":    { en: "They had a big _____ last night and didn't speak to each other this morning.",                    ja: "昨夜彼らは大きな_____をして、今朝は互いに口を利かなかった。" },
+  "attention":   { en: "Please pay _____ to the instructions before you start the test.",                                 ja: "テストを始める前に、指示に_____を払ってください。" },
+  "be born":     { en: "She _____ in Tokyo, but she grew up in Osaka.",                                                   ja: "彼女は東京で_____が、大阪で育った。" },
+  "careful":     { en: "Be _____ when you cross the street — there's a lot of traffic.",                                  ja: "道を渡るときは_____に。交通量が多い。" },
+  "chore":       { en: "Taking out the trash is my least favorite _____ at home.",                                        ja: "ゴミ出しは家でいちばん嫌いな_____だ。" }
+};
+
+const POS_CATEGORIES = {
+  "動詞 (Verb)":             ["consider","get along","share","wonder","argue","be born"],
+  "名詞 (Noun)":             ["difference","argument","attention","chore"],
+  "形容詞 (Adjective)":      ["confident","creative","dangerous","independent","similar","smart","angry","careful"],
+  "副詞・その他 (Adv/Other)": ["everywhere","in general"]
+};
+
+const WL = Object.keys(WORDS);
+
+const SECTION_DEFS = [
+  { id:"meaning4",  label:"英語 → 意味",  desc:"単語を見て正しい定義を選ぶ",   count: WL.length },
+  { id:"def2word",  label:"意味 → 英語",  desc:"定義を見て正しい単語を選ぶ",   count: WL.length },
+  { id:"refers",    label:"refers to",    desc:"〇〇 refers to _____ 形式",    count: WL.length },
+  { id:"fillblank", label:"英文穴埋め",   desc:"文脈に合う単語を選ぶ（和訳付き）", count: WL.length },
+  { id:"pos",       label:"品詞分類",     desc:"全単語を品詞ごとに分類する",   count: 1 }
+];
+
+// ===================== STATS (localStorage) =====================
+const STATS_KEY = 'unit2_quiz_stats_v1';
+
+function loadStats() {
+  try {
+    const raw = localStorage.getItem(STATS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+function saveStats(s) {
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(s)); } catch(e) {}
+}
+function recordAnswer(wordKey, correct) {
+  const stats = loadStats();
+  if (!stats[wordKey]) stats[wordKey] = { attempts: 0, correct: 0 };
+  stats[wordKey].attempts++;
+  if (correct) stats[wordKey].correct++;
+  saveStats(stats);
+}
+function getErrorRate(wordKey) {
+  const stats = loadStats();
+  const s = stats[wordKey];
+  if (!s || s.attempts === 0) return null;
+  return 1 - (s.correct / s.attempts);
+}
+function getWeakWords(threshold = 0.4, minAttempts = 1) {
+  const stats = loadStats();
+  return WL.filter(w => {
+    const s = stats[w];
+    if (!s || s.attempts < minAttempts) return false;
+    return (1 - s.correct / s.attempts) >= threshold;
+  }).sort((a,b) => getErrorRate(b) - getErrorRate(a));
+}
+function clearStats() {
+  try { localStorage.removeItem(STATS_KEY); } catch(e) {}
+}
+
+// ===================== HELPERS =====================
+function shuffle(arr) {
+  let a = [...arr];
+  for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function otherDefs(w, n)  { return shuffle(WL.filter(x=>x!==w)).slice(0,n).map(o=>WORDS[o].def); }
+function otherWords(w, n) { return shuffle(WL.filter(x=>x!==w)).slice(0,n); }
+function make4(correct, distractors) {
+  const pool = shuffle([correct, ...distractors.slice(0,3)]);
+  return { choices: pool, answer: pool.indexOf(correct) };
+}
+function esc(s) { return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+// stat key for a question
+function qStatKey(q) {
+  if (q.type === 'pos') return '__pos__';
+  return q.word + '_' + q.type;
+}
+
+// ===================== STATE =====================
+let screen = 'settings';
+let settings = { order:'random', count:'all', customCount:20, sections: new Set(['meaning4','def2word','refers','fillblank','pos']) };
+let quizQs = [], current = 0, score = 0, answeredFlags = [], sessionWrongs = [];
+let posPlaced = {}, selectedWord = null;
+let isWeakMode = false;
+
+// ===================== BUILD QUESTIONS =====================
+function buildQuestions(wordList) {
+  const wl = wordList || WL;
+  const all = [];
+  if (settings.sections.has('meaning4')) wl.forEach(w => {
+    const {choices,answer} = make4(WORDS[w].def, otherDefs(w,3));
+    all.push({ type:'meaning4', section:'英語 → 意味', word:w, choices, answer });
+  });
+  if (settings.sections.has('def2word')) wl.forEach(w => {
+    const {choices,answer} = make4(w, otherWords(w,3));
+    all.push({ type:'def2word', section:'意味 → 英語', def:WORDS[w].def, word:w, choices, answer });
+  });
+  if (settings.sections.has('refers')) wl.forEach(w => {
+    const {choices,answer} = make4(WORDS[w].def, otherDefs(w,3));
+    all.push({ type:'refers', section:'refers to', word:w, choices, answer });
+  });
+  if (settings.sections.has('fillblank')) wl.forEach(w => {
+    const {choices,answer} = make4(w, otherWords(w,3));
+    all.push({ type:'fillblank', section:'英文穴埋め', sentenceEn: SENTENCES[w].en, sentenceJa: SENTENCES[w].ja, word:w, def:WORDS[w].def, choices, answer });
+  });
+  const posQ = (settings.sections.has('pos') && !wordList) ? [{
+    type:'pos', section:'品詞分類', words: shuffle([...WL]), categories: POS_CATEGORIES
+  }] : [];
+
+  const nonPos = settings.order==='random' ? shuffle(all) : all;
+  let pool = [...nonPos, ...posQ];
+
+  if (settings.count !== 'all') {
+    const n = parseInt(settings.count==='custom' ? settings.customCount : settings.count);
+    const posItems = pool.filter(q=>q.type==='pos');
+    const nonPosItems = pool.filter(q=>q.type!=='pos');
+    pool = [...nonPosItems.slice(0, Math.max(0, n - posItems.length)), ...posItems];
+  }
+  return pool;
+}
+
+// ===================== RENDER DISPATCHER =====================
+function render() {
+  if (screen==='settings') renderSettings();
+  else if (screen==='quiz') renderQuiz();
+  else renderResult();
+}
+
+// ===================== SETTINGS =====================
+function calcAvailable() {
+  let n = 0;
+  SECTION_DEFS.forEach(s => { if (settings.sections.has(s.id)) n += s.count; });
+  return n;
+}
+function getDisplayCount(avail) {
+  if (settings.count==='all') return avail;
+  if (settings.count==='custom') return Math.min(parseInt(settings.customCount)||1, avail);
+  return Math.min(parseInt(settings.count), avail);
+}
+
+function renderSettings() {
+  const avail = calcAvailable();
+  const countOpts = [10, 20, 40, avail];
+  const uniq = [...new Set(countOpts)].filter(n => n <= avail && n > 0);
+  const stats = loadStats();
+  const weakWords = getWeakWords(0.4, 1);
+  const hasStats = Object.keys(stats).length > 0;
+
+  // stats panel items: top 8 by error rate
+  const statsItems = WL
+    .filter(w => stats[w] && stats[w].attempts > 0)
+    .sort((a,b) => getErrorRate(b) - getErrorRate(a))
+    .slice(0, 8);
+
+  let statsPanelHtml = '';
+  if (statsItems.length > 0) {
+    statsPanelHtml = `<div class="stats-panel">
+      <h3>📊 単語別 正答率（過去の記録）</h3>
+      ${statsItems.map(w => {
+        const s = stats[w];
+        const rate = Math.round((s.correct / s.attempts) * 100);
+        const color = rate >= 80 ? '#1D9E75' : rate >= 50 ? '#EF9F27' : '#E24B4A';
+        return `<div class="stats-row">
+          <span class="stats-word">${w}</span>
+          <div class="stats-bar-bg"><div class="stats-bar-fill" style="width:${rate}%;background:${color}"></div></div>
+          <span class="stats-rate" style="color:${color}">${rate}%</span>
+          <span class="stats-attempts">${s.attempts}回</span>
+        </div>`;
+      }).join('')}
+      <div style="text-align:right;margin-top:6px">
+        <span style="font-size:11px;color:#aaa;cursor:pointer;text-decoration:underline" onclick="if(confirm('記録をリセットしますか？')){clearStats();render();}">記録をリセット</span>
+      </div>
+    </div>`;
+  } else {
+    statsPanelHtml = `<div class="stats-panel"><p class="stats-empty">まだ記録がありません。テストを受けると正答率が記録されます。</p></div>`;
+  }
+
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="settings-title">Unit 2 練習テスト</div>
+      <div class="settings-sub">全${WL.length}単語 ／ 最大${SECTION_DEFS.reduce((a,s)=>a+s.count,0)}問</div>
+
+      <div class="setting-label">出題順</div>
+      <div class="toggle-row">
+        <div class="toggle-btn ${settings.order==='random'?'active':''}" onclick="setOrder('random')">🔀 ランダム</div>
+        <div class="toggle-btn ${settings.order==='order'?'active':''}" onclick="setOrder('order')">📋 セクション順</div>
+      </div>
+
+      <div class="setting-label">問題数</div>
+      <div class="count-row">
+        ${uniq.map(n =>
+          `<div class="count-btn ${(settings.count==n||(n===avail&&settings.count==='all'))?'active':''}" onclick="setCount('${n===avail?'all':n}')">${n===avail?'全問('+avail+')':n+'問'}</div>`
+        ).join('')}
+        <div class="count-btn ${settings.count==='custom'?'active':''}" onclick="setCount('custom')">指定</div>
+        ${settings.count==='custom'
+          ? `<div class="count-custom"><input type="number" min="1" max="${avail}" value="${settings.customCount}" oninput="setCustomCount(this.value)"> 問</div>`
+          : ''}
+      </div>
+
+      <div class="setting-label">出題セクション</div>
+      <div class="section-list">
+        ${SECTION_DEFS.map(s=>`
+          <label class="section-check ${settings.sections.has(s.id)?'checked':''}" onclick="toggleSection('${s.id}')">
+            <input type="checkbox" ${settings.sections.has(s.id)?'checked':''} onclick="event.stopPropagation();toggleSection('${s.id}')">
+            <span class="section-check-label">${s.label}　<span style="font-weight:400;font-size:12px;color:#888">${s.desc}</span></span>
+            <span class="section-check-count">${s.count}問</span>
+          </label>`).join('')}
+      </div>
+
+      <div class="avail-count">選択中の合計：<span>${avail}問</span>　／　出題数：<span>${getDisplayCount(avail)}問</span></div>
+
+      <button class="start-btn" onclick="startQuiz(false)" ${avail===0?'disabled':''}>▶ スタート</button>
+      <button class="weak-btn" onclick="startQuiz(true)" ${weakWords.length===0?'disabled':''}>
+        🎯 間違えやすい問題を解く ${weakWords.length>0?'（対象：'+weakWords.length+'単語）':'（記録なし）'}
+      </button>
+    </div>
+
+    <div class="card">
+      ${statsPanelHtml}
+    </div>`;
+}
+
+function setOrder(v)       { settings.order = v; renderSettings(); }
+function setCount(v)       { settings.count = v; renderSettings(); }
+function setCustomCount(v) { settings.customCount = parseInt(v)||1; renderSettings(); }
+function toggleSection(id) {
+  if (settings.sections.has(id)) { if (settings.sections.size > 1) settings.sections.delete(id); }
+  else settings.sections.add(id);
+  renderSettings();
+}
+
+function startQuiz(weakMode) {
+  isWeakMode = weakMode;
+  let wordList = null;
+  if (weakMode) {
+    wordList = getWeakWords(0.4, 1);
+    if (wordList.length === 0) return;
+  }
+  quizQs = buildQuestions(wordList);
+  current = 0; score = 0; answeredFlags = []; sessionWrongs = [];
+  posPlaced = {}; selectedWord = null;
+  screen = 'quiz'; render();
+}
+
+// ===================== QUIZ =====================
+function renderQuiz() {
+  const q = quizQs[current];
+  const pct = (current / quizQs.length) * 100;
+  document.getElementById('app').innerHTML = `
+    <div class="top-bar">
+      <button class="back-btn" onclick="goSettings()">← 設定</button>
+      <div class="progress-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="q-count">${current+1} / ${quizQs.length}</div>
+    </div>
+    <div id="qbody"></div>`;
+  renderQBody(q);
+}
+
+function renderQBody(q) {
+  const area = document.getElementById('qbody');
+  if (!area) return;
+  q.type === 'pos' ? renderPOS(q, area) : renderChoice(q, area);
+}
+
+function renderChoice(q, area) {
+  const shuffled = shuffle(q.choices.map((c,i)=>({text:c,orig:i})));
+  let topHtml = '';
+  if (q.type==='meaning4') {
+    topHtml = `<div class="q-word">${q.word}</div><p class="hint">この単語の意味として正しいものを選んでください</p>`;
+  } else if (q.type==='def2word') {
+    topHtml = `<div class="q-def">${q.def}</div><p class="hint">この意味を表す単語を選んでください</p>`;
+  } else if (q.type==='refers') {
+    topHtml = `<div class="q-text"><span style="font-weight:600;font-size:18px">${q.word}</span> refers to _____.</div><p class="hint">正しい意味を選んでください</p>`;
+  } else if (q.type==='fillblank') {
+    const disp = q.sentenceEn.replace('_____','<span style="background:#fff3cd;padding:0 4px;border-radius:3px;font-weight:600">_____</span>');
+    const jaDisp = q.sentenceJa.replace('_____','<span style="font-weight:600;color:#555">_____</span>');
+    topHtml = `<div class="q-text" style="line-height:2">${disp}</div>
+      <div class="q-trans">🇯🇵 ${jaDisp}</div>`;
+  }
+
+  area.innerHTML = `<span class="section-header">${q.section}</span>` + topHtml +
+    `<div class="choices">` +
+    shuffled.map((c,i)=>
+      `<button class="choice-btn" data-orig="${c.orig}" onclick="pickChoice(${c.orig},${q.answer},this)">${String.fromCharCode(65+i)}. ${c.text}</button>`
+    ).join('') +
+    `</div><div id="feedback"></div>` +
+    `<div class="nav-row"><span></span><button class="btn" id="nextbtn" onclick="nextQ()" style="display:none">${current+1<quizQs.length?'次の問題 →':'結果を見る →'}</button></div>`;
+}
+
+function pickChoice(orig, answer, btn) {
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.disabled = true;
+    if (parseInt(b.getAttribute('data-orig'))===answer) b.classList.add('reveal');
+  });
+  const q = quizQs[current];
+  const isCorrect = orig === answer;
+  // record stats
+  recordAnswer(qStatKey(q), isCorrect);
+
+  const fb = document.getElementById('feedback');
+  if (isCorrect) {
+    btn.classList.remove('reveal'); btn.classList.add('correct');
+    score++;
+    let extra = '';
+    if (q.type==='fillblank') extra = `<br><small>✅ ${q.word}：${q.def}<br>🇯🇵 ${WORDS[q.word].ja}</small>`;
+    fb.className = 'feedback correct';
+    fb.innerHTML = '正解！' + extra;
+  } else {
+    btn.classList.add('wrong');
+    let extra = '';
+    if (q.type==='fillblank') extra = `<br><small>正解：${q.word}（${q.def}）<br>🇯🇵 ${WORDS[q.word].ja}</small>`;
+    else if (q.type==='meaning4'||q.type==='refers') extra = `<br><small>🇯🇵 ${WORDS[q.word].ja}</small>`;
+    fb.className = 'feedback wrong';
+    fb.innerHTML = '不正解。正解は緑色です。' + extra;
+    sessionWrongs.push(q);
+  }
+  answeredFlags[current] = true;
+  document.getElementById('nextbtn').style.display = 'inline-block';
+}
+
+function renderPOS(q, area) {
+  if (!posPlaced[current]) {
+    posPlaced[current] = {};
+    Object.keys(q.categories).forEach(c => posPlaced[current][c] = []);
+  }
+  const placed = posPlaced[current];
+  const allPlaced = Object.values(placed).flat();
+  const isDone = answeredFlags[current];
+
+  area.innerHTML = `<span class="section-header">${q.section}</span>` +
+    `<div class="q-text">品詞分類</div>` +
+    `<p class="hint">単語をタップして選び、カテゴリをタップして配置（全${q.words.length}単語）</p>` +
+    `<div class="drag-area">` +
+    q.words.map(w => `<div class="drag-item${allPlaced.includes(w)?' placed':''}" onclick="selectWord(this,'${esc(w)}')">${w}</div>`).join('') +
+    `</div><div class="pos-grid">` +
+    Object.keys(placed).map(cat =>
+      `<div class="pos-box" onclick="placeWord('${esc(cat)}')">
+        <div class="pos-label">${cat}</div>
+        <div class="pos-slot">
+          ${placed[cat].map(w => {
+            let cls = 'placed-item';
+            if (isDone) cls += q.categories[cat]&&q.categories[cat].includes(w)?' correct':' wrong';
+            return `<div class="${cls}" onclick="removeItem(event,'${esc(cat)}','${esc(w)}')">${w}${isDone?'':' ✕'}</div>`;
+          }).join('')}
+        </div>
+      </div>`
+    ).join('') +
+    `</div><div id="feedback"></div>` +
+    `<div class="nav-row">` +
+    (isDone
+      ? `<span></span><button class="btn" onclick="nextQ()">${current+1<quizQs.length?'次の問題 →':'結果を見る →'}</button>`
+      : `<button class="btn" onclick="checkPOS()">答え合わせ</button><span></span>`
+    ) + `</div>`;
+}
+
+function selectWord(el, w) {
+  if (answeredFlags[current]) return;
+  document.querySelectorAll('.drag-item').forEach(d=>d.classList.remove('selected'));
+  selectedWord = w; el.classList.add('selected');
+}
+function placeWord(cat) {
+  if (!selectedWord||answeredFlags[current]) return;
+  if (Object.values(posPlaced[current]).flat().includes(selectedWord)) return;
+  posPlaced[current][cat].push(selectedWord);
+  selectedWord = null;
+  renderPOS(quizQs[current], document.getElementById('qbody'));
+}
+function removeItem(e, cat, w) {
+  e.stopPropagation();
+  if (answeredFlags[current]) return;
+  posPlaced[current][cat] = posPlaced[current][cat].filter(x=>x!==w);
+  renderPOS(quizQs[current], document.getElementById('qbody'));
+}
+function checkPOS() {
+  const q = quizQs[current];
+  const placed = posPlaced[current];
+  const allPlaced = Object.values(placed).flat();
+  const unplaced = q.words.filter(w=>!allPlaced.includes(w));
+  let correct = 0;
+  allPlaced.forEach(w => {
+    const cat = Object.keys(placed).find(c=>placed[c].includes(w));
+    if (q.categories[cat]&&q.categories[cat].includes(w)) correct++;
+  });
+  const isAllCorrect = correct === q.words.length && unplaced.length === 0;
+  recordAnswer('__pos__', isAllCorrect);
+  answeredFlags[current] = true;
+  const fb = document.getElementById('feedback');
+  if (isAllCorrect) {
+    score++;
+    fb.className = 'feedback correct';
+    fb.textContent = `全問正解！(${correct}/${q.words.length})`;
+  } else {
+    const lines = Object.keys(q.categories).map(c=>`${c}：${q.categories[c].join('、')}`).join('<br>');
+    fb.className = 'feedback partial';
+    fb.innerHTML = `${correct}/${q.words.length} 正解。` +
+      (unplaced.length ? `未配置：${unplaced.join('、')}<br>` : '') +
+      `<br><small>正解：<br>${lines}</small>`;
+    sessionWrongs.push(q);
+  }
+  renderPOS(q, document.getElementById('qbody'));
+}
+
+function nextQ() {
+  current++;
+  if (current >= quizQs.length) { screen='result'; renderResult(); }
+  else renderQuiz();
+}
+function goSettings() { screen='settings'; render(); }
+
+// ===================== RESULT =====================
+function renderResult() {
+  const pct = Math.round((score/quizQs.length)*100);
+  const unique = [...new Set(sessionWrongs)];
+  const usedSections = SECTION_DEFS.filter(s=>quizQs.some(q=>q.type===s.id));
+
+  const barsHtml = usedSections.map(s => {
+    const qs = quizQs.filter(q=>q.type===s.id);
+    const w = unique.filter(q=>q.type===s.id).length;
+    const c = qs.length - w, t = qs.length;
+    const p = Math.round((c/t)*100);
+    const cls = p>=80?'':p>=50?' mid':' low';
+    return `<div class="score-bar-row">
+      <span style="min-width:120px;font-size:13px;color:#555">${s.label}</span>
+      <div class="score-bar-bg"><div class="score-bar-fill-r${cls}" style="width:${p}%"></div></div>
+      <span style="min-width:50px;text-align:right;font-size:13px;color:#555">${c}/${t}</span>
+    </div>`;
+  }).join('');
+
+  let wrongHtml = '';
+  if (unique.length > 0) {
+    wrongHtml = `<div class="wrong-list"><h3>復習リスト（間違えた問題）</h3>` +
+      unique.map(w => {
+        if (w.type==='meaning4') return `<div class="wrong-item"><strong>${w.word}</strong>意味：${w.choices[w.answer]}<br><small style="color:#888">🇯🇵 ${WORDS[w.word].ja}</small></div>`;
+        if (w.type==='def2word') return `<div class="wrong-item"><strong>「${w.def}」</strong>正解：${w.choices[w.answer]}<br><small style="color:#888">🇯🇵 ${WORDS[w.word].ja}</small></div>`;
+        if (w.type==='refers')   return `<div class="wrong-item"><strong>${w.word} refers to _____.</strong>${w.choices[w.answer]}<br><small style="color:#888">🇯🇵 ${WORDS[w.word].ja}</small></div>`;
+        if (w.type==='fillblank') return `<div class="wrong-item"><strong>穴埋め</strong>${w.sentenceEn.replace('_____','[ '+w.word+' ]')}<br><small style="color:#888">🇯🇵 ${w.sentenceJa.replace('_____','[ '+w.word+' ]')}</small><br><small style="color:#666">意味：${w.def}</small></div>`;
+        if (w.type==='pos') {
+          const lines = Object.keys(w.categories).map(c=>`${c}：${w.categories[c].join('、')}`).join('<br>');
+          return `<div class="wrong-item"><strong>品詞分類の正解</strong><small>${lines}</small></div>`;
+        }
+        return '';
+      }).join('') + `</div>`;
+  } else {
+    wrongHtml = `<p style="color:#1D9E75;font-size:14px;margin-top:1rem;text-align:center">全問正解！完璧です！</p>`;
+  }
+
+  document.getElementById('app').innerHTML = `<div class="result-card">
+    <div class="result-top">
+      <div class="result-score">${score} / ${quizQs.length}</div>
+      <div class="result-label">正答数</div>
+      <div class="result-pct">${pct}%</div>
+    </div>
+    <div style="margin-bottom:1.5rem">${barsHtml}</div>
+    <div class="result-btns">
+      <button class="btn primary" onclick="retryWrong()" ${unique.length===0?'disabled':''}>このセッションの間違いをやり直す</button>
+      <button class="btn" onclick="goSettings()">設定に戻る</button>
+    </div>
+    ${wrongHtml}
+  </div>`;
+}
+
+function retryWrong() {
+  const unique = [...new Set(sessionWrongs)];
+  if (unique.length===0) return;
+  quizQs = settings.order==='random' ? shuffle(unique) : unique;
+  current = 0; score = 0; answeredFlags = []; sessionWrongs = [];
+  posPlaced = {}; selectedWord = null;
+  screen = 'quiz'; renderQuiz();
+}
+
+render();
+</script>
+</body>
+</html>
