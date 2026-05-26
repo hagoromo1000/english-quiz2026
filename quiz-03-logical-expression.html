@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>同音異字 フラッシュカード</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f0f;
+  --bg2: #1a1a1a;
+  --bg3: #242424;
+  --bg4: #2e2e2e;
+  --surface: #1e1e1e;
+  --border: #333;
+  --border2: #444;
+  --text: #f0ede8;
+  --text2: #a09d98;
+  --text3: #6a6760;
+  --accent: #c8a96e;
+  --accent2: #e8c98e;
+  --red: #e05252;
+  --green: #52a878;
+  --blue: #5285c8;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+.logo span { color: var(--text2); font-weight: 400; font-size: 0.85rem; margin-left: 0.5rem; }
+.header-stats {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.78rem;
+  color: var(--text3);
+}
+.header-stats strong { color: var(--text2); }
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── HOME SCREEN ── */
+#home {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+.home-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+.home-sub {
+  color: var(--text3);
+  font-size: 0.9rem;
+  margin-bottom: 2.5rem;
+}
+.section-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 0.75rem;
+}
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+@media(max-width:560px){ .config-grid { grid-template-columns: 1fr; } }
+.config-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+.config-card .section-label { margin-bottom: 0.6rem; }
+
+/* order buttons */
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.btn-opt {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.8rem;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-opt:hover { border-color: var(--accent); color: var(--accent); }
+.btn-opt.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #111;
+  font-weight: 500;
+}
+
+/* count slider */
+.count-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.count-display {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 2.5rem;
+  text-align: center;
+}
+input[type=range] {
+  -webkit-appearance: none;
+  flex: 1;
+  height: 4px;
+  background: var(--bg4);
+  border-radius: 2px;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* stats mini grid */
+.stats-mini {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+@media(max-width:560px){ .stats-mini { grid-template-columns: repeat(2,1fr); } }
+.stat-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem;
+  text-align: center;
+}
+.stat-box .val {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.stat-box .lbl {
+  font-size: 0.7rem;
+  color: var(--text3);
+  margin-top: 0.2rem;
+}
+.stat-box.acc .val { color: var(--green); }
+.stat-box.err .val { color: var(--red); }
+
+/* start button */
+.btn-start {
+  width: 100%;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  color: #111;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.05em;
+}
+.btn-start:hover { background: var(--accent2); transform: translateY(-1px); }
+.btn-start:active { transform: scale(0.98); }
+
+/* reset link */
+.reset-link {
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: var(--text3);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.reset-link:hover { color: var(--red); }
+
+/* wrong list */
+.wrong-list-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.wrong-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.wrong-row:last-child { border-bottom: none; }
+.wrong-row .q { color: var(--text2); flex: 1; }
+.wrong-badge {
+  background: #3a1a1a;
+  border: 1px solid var(--red);
+  border-radius: 20px;
+  color: var(--red);
+  font-size: 0.7rem;
+  padding: 0.15rem 0.6rem;
+  white-space: nowrap;
+}
+
+/* ── STUDY SCREEN ── */
+#study {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+.study-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.progress-wrap { flex: 1; margin: 0 1rem; }
+.progress-bar {
+  height: 3px;
+  background: var(--bg4);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.progress-text {
+  font-size: 0.72rem;
+  color: var(--text3);
+  text-align: right;
+  margin-top: 0.3rem;
+}
+.btn-quit {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text3);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-quit:hover { border-color: var(--red); color: var(--red); }
+
+/* CARD */
+.card-scene {
+  perspective: 1200px;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+.card-3d {
+  position: relative;
+  width: 100%;
+  height: 340px;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+}
+.card-3d.flipped { transform: rotateY(180deg); }
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.card-back-face {
+  transform: rotateY(180deg);
+  align-items: flex-start;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+.card-num {
+  font-size: 0.72rem;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+.card-question {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.5rem;
+  color: var(--text);
+  text-align: center;
+  line-height: 2;
+  margin-bottom: 1rem;
+}
+.card-question em {
+  font-style: normal;
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 1px;
+}
+.card-tap-hint {
+  font-size: 0.72rem;
+  color: var(--text3);
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.card-back-face .scroll-inner {
+  overflow-y: auto;
+  width: 100%;
+  height: 100%;
+  padding: 1.75rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+.back-answer {
+  font-size: 0.7rem;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+.back-kanji {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+}
+.back-explanation {
+  font-size: 0.88rem;
+  color: var(--text2);
+  line-height: 1.8;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.back-table-title {
+  font-size: 0.68rem;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.homo-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.homo-table tr { border-bottom: 1px solid var(--border); }
+.homo-table tr:last-child { border-bottom: none; }
+.homo-table td { padding: 0.5rem 0.3rem; vertical-align: top; }
+.homo-table td:first-child {
+  font-family: 'Noto Serif JP', serif;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  padding-right: 1rem;
+  width: 80px;
+}
+.homo-table td:last-child { color: var(--text2); }
+.homo-table tr.highlight td:first-child { color: var(--accent); }
+
+/* wrong count badge on card */
+.wrong-count-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #3a1a1a;
+  border: 1px solid var(--red);
+  border-radius: 20px;
+  color: var(--red);
+  font-size: 0.68rem;
+  padding: 0.15rem 0.55rem;
+}
+
+/* answer buttons */
+.answer-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.answer-btns.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.btn-ans {
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-correct {
+  background: #0d2e1a;
+  border-color: var(--green);
+  color: var(--green);
+}
+.btn-correct:hover { background: #1a4a2a; }
+.btn-delta {
+  background: #2a2200;
+  border-color: #c8960a;
+  color: #c8960a;
+}
+.btn-delta:hover { background: #3a3000; }
+.btn-wrong {
+  background: #2e0d0d;
+  border-color: var(--red);
+  color: var(--red);
+}
+.btn-wrong:hover { background: #4a1a1a; }
+
+/* ── RESULT SCREEN ── */
+#result {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+.result-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+.result-sub { color: var(--text3); font-size: 0.88rem; margin-bottom: 2rem; }
+.result-score {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: 'Noto Serif JP', serif;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+.result-score-lbl { font-size: 0.8rem; color: var(--text3); margin-bottom: 2rem; }
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+.result-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+.result-box .v { font-size: 1.6rem; font-weight: 700; }
+.result-box .l { font-size: 0.7rem; color: var(--text3); margin-top: 0.2rem; }
+.result-box.g .v { color: var(--green); }
+.result-box.r .v { color: var(--red); }
+.result-wrongs { text-align: left; margin-bottom: 2rem; }
+.result-wrongs h3 {
+  font-size: 0.72rem;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.result-wrong-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+.result-wrong-item .qi { color: var(--text2); }
+.result-wrong-item .ai { color: var(--accent); font-family: 'Noto Serif JP', serif; font-weight: 700; }
+.result-wrong-item .cnt { color: var(--red); font-size: 0.75rem; }
+.result-actions { display: flex; flex-direction: column; gap: 0.75rem; }
+.btn-primary {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  color: #111;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-secondary {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text2);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.9rem;
+  padding: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+/* fade transition */
+.fade-enter { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">同音異字 <span>第３回</span></div>
+  <div class="header-stats">
+    <span>総学習: <strong id="hdr-total">0</strong>回</span>
+    <span>正答率: <strong id="hdr-acc">—</strong></span>
+  </div>
+</header>
+
+<!-- ═══════════ HOME ═══════════ -->
+<div id="home" class="screen active fade-enter">
+  <h1 class="home-title">フラッシュカード</h1>
+  <p class="home-sub">カタカナを漢字に直す練習 — 全30問</p>
+
+  <div class="stats-mini">
+    <div class="stat-box"><div class="val" id="s-studied">0</div><div class="lbl">学習済み問題</div></div>
+    <div class="stat-box acc"><div class="val" id="s-acc">—</div><div class="lbl">全体正答率</div></div>
+    <div class="stat-box err"><div class="val" id="s-errors">0</div><div class="lbl">総ミス回数</div></div>
+    <div class="stat-box"><div class="val" id="s-streak">0</div><div class="lbl">連続正解</div></div>
+  </div>
+
+  <div class="config-grid">
+    <div class="config-card">
+      <div class="section-label">出題順</div>
+      <div class="btn-group">
+        <button class="btn-opt selected" data-order="seq">番号順</button>
+        <button class="btn-opt" data-order="rand">ランダム</button>
+        <button class="btn-opt" data-order="wrong">ミス多い順</button>
+        <button class="btn-opt" data-order="unseen">未学習優先</button>
+      </div>
+    </div>
+    <div class="config-card">
+      <div class="section-label">出題数 <span id="count-lbl" style="color:var(--accent); font-weight:700">10</span>問</div>
+      <div class="count-row">
+        <span style="font-size:0.75rem;color:var(--text3)">5</span>
+        <input type="range" id="count-slider" min="5" max="30" step="5" value="10">
+        <span style="font-size:0.75rem;color:var(--text3)">30</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="wrong-section" style="display:none">
+    <div class="section-label" style="margin-bottom:0.5rem">ミスの多い問題 TOP 5</div>
+    <div class="wrong-list-wrap" id="wrong-list"></div>
+  </div>
+
+  <button class="btn-start" id="btn-start">学習をはじめる →</button>
+  <span class="reset-link" id="btn-reset">学習データをリセット</span>
+</div>
+
+<!-- ═══════════ STUDY ═══════════ -->
+<div id="study" class="screen">
+  <div class="study-topbar">
+    <button class="btn-quit" id="btn-quit">← 終了</button>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="progress-text" id="prog-text">0 / 0</div>
+    </div>
+    <div style="font-size:0.75rem; color:var(--text3); min-width:80px; text-align:right">
+      ◯ <span id="live-correct" style="color:var(--green)">0</span>
+      △ <span id="live-delta" style="color:#c8960a">0</span>
+      ✕ <span id="live-wrong" style="color:var(--red)">0</span>
+    </div>
+  </div>
+
+  <div class="card-scene" id="card-scene">
+    <div class="card-3d" id="card-3d">
+      <div class="card-face" id="card-front"></div>
+      <div class="card-face card-back-face" id="card-back">
+        <div class="scroll-inner" id="card-back-inner"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="answer-btns" id="answer-btns">
+    <button class="btn-ans btn-correct" id="btn-correct">◯ 正解</button>
+    <button class="btn-ans btn-delta" id="btn-delta">△ うろ覚え</button>
+    <button class="btn-ans btn-wrong" id="btn-wrong">✕ 不正解</button>
+  </div>
+</div>
+
+<!-- ═══════════ RESULT ═══════════ -->
+<div id="result" class="screen">
+  <div class="result-title">お疲れさまでした</div>
+  <div class="result-sub" id="res-date"></div>
+  <div class="result-score" id="res-score">—</div>
+  <div class="result-score-lbl">正答率</div>
+  <div class="result-grid">
+    <div class="result-box"><div class="v" id="res-total">—</div><div class="l">出題数</div></div>
+    <div class="result-box g"><div class="v" id="res-correct">—</div><div class="l">◯ 正解</div></div>
+    <div class="result-box" style="border-color:#c8960a44"><div class="v" style="color:#c8960a" id="res-delta">—</div><div class="l">△ うろ覚え</div></div>
+    <div class="result-box r"><div class="v" id="res-wrong">—</div><div class="l">✕ 不正解</div></div>
+  </div>
+  <div class="result-wrongs" id="result-wrongs-wrap"></div>
+  <div class="result-actions">
+    <button class="btn-primary" id="res-retry">同じ設定でもう一度</button>
+    <button class="btn-secondary" id="res-wrong-only">✕ ＋ △ の問題を再挑戦</button>
+    <button class="btn-secondary" id="res-home">ホームに戻る</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+const CARDS = [
+  { id:1,  q:"読書<em>イガイ</em>の趣味",         ans:"以外",  exp:"それを除いた範囲・それ以外のもの。",
+    homo:[["以外","それを除いた範囲。「読書以外の趣味」"],["意外","予想と違って驚くさま。「意外な結末」"]] },
+  { id:2,  q:"<em>イガイ</em>な人に会った",         ans:"意外",  exp:"予想に反して驚くさま。",
+    homo:[["以外","それを除いた範囲。「読書以外の趣味」"],["意外","予想と違って驚くさま。「意外な結末」"]] },
+  { id:3,  q:"人事<em>イドウ</em>",                ans:"異動",  exp:"職員の地位・職務・所属などが変わること。",
+    homo:[["異動","役職・所属の変更。「人事異動」"],["異同","違いと同じ点。「本文に異同はない」"],["移動","場所を移ること。「車両を移動する」"]] },
+  { id:4,  q:"本文に<em>イドウ</em>はない",         ans:"異同",  exp:"違いがある点と同じ点のこと。差異。",
+    homo:[["異動","役職・所属の変更。「人事異動」"],["異同","違いと同じ点。「本文に異同はない」"],["移動","場所を移ること。「車両を移動する」"]] },
+  { id:5,  q:"車両に<em>イドウ</em>する",           ans:"移動",  exp:"場所や位置を移すこと。",
+    homo:[["異動","役職・所属の変更。「人事異動」"],["異同","違いと同じ点。「本文に異同はない」"],["移動","場所を移ること。「車両を移動する」"]] },
+  { id:6,  q:"試験の<em>カイトウ</em>用紙",         ans:"解答",  exp:"問題を解いて答えを出すこと。試験や問題に使う。",
+    homo:[["解答","問題を解くこと。「解答用紙」「模範解答」"],["回答","問い合わせ・質問に答えること。「アンケートに回答する」"]] },
+  { id:7,  q:"問い合わせに<em>カイトウ</em>する",   ans:"回答",  exp:"質問や問い合わせに答えること。",
+    homo:[["解答","問題を解くこと。「解答用紙」「模範解答」"],["回答","問い合わせ・質問に答えること。「アンケートに回答する」"]] },
+  { id:8,  q:"採点の<em>キジュン</em>",             ans:"基準",  exp:"判断・評価の拠り所となる標準。",
+    homo:[["基準","判断・評価の基となる標準。「採点基準」「基準値」"],["規準","規範・規則としての基準。「行動の規準」「道徳的規準」"]] },
+  { id:9,  q:"行動の<em>キジュン</em>を定める",     ans:"規準",  exp:"規範・規則としての基準。行動の正しさを測る尺度。",
+    homo:[["基準","判断・評価の基となる標準。「採点基準」「基準値」"],["規準","規範・規則としての基準。「行動の規準」「道徳的規準」"]] },
+  { id:10, q:"部下に<em>シジ</em>を出す",           ans:"指示",  exp:"指図・命令すること。上位から下位へ方向を示すこと。",
+    homo:[["指示","指図・命令。「部下に指示を出す」"],["支持","賛同し後押しすること。「意見を支持する」"]] },
+  { id:11, q:"彼の意見を<em>シジ</em>する",         ans:"支持",  exp:"賛同して支えること。後押しすること。",
+    homo:[["指示","指図・命令。「部下に指示を出す」"],["支持","賛同し後押しすること。「意見を支持する」"]] },
+  { id:12, q:"生活の<em>ジッタイ</em>調査",         ans:"実態",  exp:"実際のありさま・現状。",
+    homo:[["実態","実際のありさま。「生活実態調査」「実態を把握する」"],["実体","実際に存在する本体。「実体のない幽霊会社」"]] },
+  { id:13, q:"<em>ジッタイ</em>のない幽霊会社",     ans:"実体",  exp:"実際に存在する本体・中身のこと。",
+    homo:[["実態","実際のありさま。「生活実態調査」「実態を把握する」"],["実体","実際に存在する本体。「実体のない幽霊会社」"]] },
+  { id:14, q:"切手の<em>シュウシュウ</em>が趣味",   ans:"収集",  exp:"同種のものを集めること。コレクション。",
+    homo:[["収集","同種のものを集める。「切手収集」「情報を収集する」"],["収拾","乱れた状態をまとめ収める。「混乱を収拾する」"]] },
+  { id:15, q:"混乱を<em>シュウシュウ</em>する",     ans:"収拾",  exp:"乱れた状態をまとめて収めること。",
+    homo:[["収集","同種のものを集める。「切手収集」「情報を収集する」"],["収拾","乱れた状態をまとめ収める。「混乱を収拾する」"]] },
+  { id:16, q:"左右<em>タイショウ</em>",             ans:"対称",  exp:"形・位置が対応してつり合っていること。シンメトリー。",
+    homo:[["対称","形・位置のつり合い。「左右対称」「点対称」"],["対象","行為・研究の向かう相手。「研究の対象」"],["対照","二つを比べ合わせること。「比較対照する」"]] },
+  { id:17, q:"研究の<em>タイショウ</em>",           ans:"対象",  exp:"行為や意識が向けられる相手・目標。",
+    homo:[["対称","形・位置のつり合い。「左右対称」「点対称」"],["対象","行為・研究の向かう相手。「研究の対象」"],["対照","二つを比べ合わせること。「比較対照する」"]] },
+  { id:18, q:"比較<em>タイショウ</em>する",         ans:"対照",  exp:"二つのものを比べ合わせること。",
+    homo:[["対称","形・位置のつり合い。「左右対称」「点対称」"],["対象","行為・研究の向かう相手。「研究の対象」"],["対照","二つを比べ合わせること。「比較対照する」"]] },
+  { id:19, q:"資本主義<em>タイセイ</em>",           ans:"体制",  exp:"社会・組織の仕組みや制度。",
+    homo:[["体制","社会・組織の仕組み。「資本主義体制」"],["体勢","からだの姿勢・構え。「得意の体勢」"],["態勢","事に臨む心身の備え。「着陸態勢」"],["大勢","物事全体の勢い・趨勢。「大勢が判明する」"]] },
+  { id:20, q:"得意の<em>タイセイ</em>に持ち込む",   ans:"体勢",  exp:"からだの姿勢・構え。主に物理的・スポーツ的な場面で使う。",
+    homo:[["体制","社会・組織の仕組み。「資本主義体制」"],["体勢","からだの姿勢・構え。「得意の体勢」"],["態勢","事に臨む心身の備え。「着陸態勢」"],["大勢","物事全体の勢い・趨勢。「大勢が判明する」"]] },
+  { id:21, q:"着陸<em>タイセイ</em>に入る",         ans:"態勢",  exp:"事に臨む際の心身の備え・構え。",
+    homo:[["体制","社会・組織の仕組み。「資本主義体制」"],["体勢","からだの姿勢・構え。「得意の体勢」"],["態勢","事に臨む心身の備え。「着陸態勢」"],["大勢","物事全体の勢い・趨勢。「大勢が判明する」"]] },
+  { id:22, q:"<em>タイセイ</em>が判明する",         ans:"大勢",  exp:"物事全体の流れ・趨勢。",
+    homo:[["体制","社会・組織の仕組み。「資本主義体制」"],["体勢","からだの姿勢・構え。「得意の体勢」"],["態勢","事に臨む心身の備え。「着陸態勢」"],["大勢","物事全体の勢い・趨勢。「大勢が判明する」"]] },
+  { id:23, q:"<em>ドウシ</em>を募る",               ans:"同志",  exp:"同じ志・目的をもつ仲間。",
+    homo:[["同志","同じ志をもつ仲間。「同志を募る」「革命の同志」"],["同士","同じ立場・種類の者どうし。「いとこ同士」"]] },
+  { id:24, q:"いとこ<em>ドウシ</em>",               ans:"同士",  exp:"同じ立場・種類の者どうし。",
+    homo:[["同志","同じ志をもつ仲間。「同志を募る」「革命の同志」"],["同士","同じ立場・種類の者どうし。「いとこ同士」"]] },
+  { id:25, q:"電車と<em>ヘイコウ</em>して走る",     ans:"並行",  exp:"二つのものが同時に並んで進むこと。",
+    homo:[["並行","二つが同時に並んで進む。「電車と並行して走る」"],["平行","幾何学的に交わらない直線・面。「平行棒」「平行線」"],["平衡","つり合い・バランス。「平衡感覚」"]] },
+  { id:26, q:"段違い<em>ヘイコウ</em>棒",           ans:"平行",  exp:"幾何学的に交わらない直線・面の関係。",
+    homo:[["並行","二つが同時に並んで進む。「電車と並行して走る」"],["平行","幾何学的に交わらない直線・面。「平行棒」「平行線」"],["平衡","つり合い・バランス。「平衡感覚」"]] },
+  { id:27, q:"<em>ヘイコウ</em>感覚",               ans:"平衡",  exp:"つり合い・バランスのこと。",
+    homo:[["並行","二つが同時に並んで進む。「電車と並行して走る」"],["平行","幾何学的に交わらない直線・面。「平行棒」「平行線」"],["平衡","つり合い・バランス。「平衡感覚」"]] },
+  { id:28, q:"安全<em>ホショウ</em>",               ans:"保障",  exp:"権利・安全などが侵されないよう守ること。",
+    homo:[["保障","権利・安全を守ること。「安全保障」「社会保障」"],["補償","損害・損失を金銭などで埋め合わせること。「損害を補償する」"],["保証","確かであると請け合うこと。「保証人」「品質を保証する」"]] },
+  { id:29, q:"国が損害を<em>ホショウ</em>する",     ans:"補償",  exp:"損害・損失を金銭などで埋め合わせること。",
+    homo:[["保障","権利・安全を守ること。「安全保障」「社会保障」"],["補償","損害・損失を金銭などで埋め合わせること。「損害を補償する」"],["保証","確かであると請け合うこと。「保証人」「品質を保証する」"]] },
+  { id:30, q:"<em>ホショウ</em>人",                 ans:"保証",  exp:"確かであると請け合うこと。責任をもって約束すること。",
+    homo:[["保障","権利・安全を守ること。「安全保障」「社会保障」"],["補償","損害・損失を金銭などで埋め合わせること。「損害を補償する」"],["保証","確かであると請け合うこと。「保証人」「品質を保証する」"]] },
+];
+
+// ══════════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════════
+const SK = 'doion_v1';
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(SK)) || initData(); }
+  catch(e) { return initData(); }
+}
+function initData() {
+  return { stats: { totalAnswered:0, totalCorrect:0, streak:0 }, cards:{} };
+}
+function saveData(d) { localStorage.setItem(SK, JSON.stringify(d)); }
+function getCard(d, id) {
+  if (!d.cards[id]) d.cards[id] = { seen:0, correct:0, wrong:0 };
+  return d.cards[id];
+}
+
+let DB = loadData();
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let cfg = { order:'seq', count:10 };
+let session = { queue:[], idx:0, correct:0, delta:0, wrong:0, sessionWrong:[], sessionDelta:[] };
+let flipped = false;
+
+// ══════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active','fade-enter');
+  setTimeout(()=>document.getElementById(id).classList.remove('fade-enter'),400);
+}
+
+function updateHeader() {
+  const t = DB.stats.totalAnswered;
+  const c = DB.stats.totalCorrect;
+  document.getElementById('hdr-total').textContent = t;
+  document.getElementById('hdr-acc').textContent = t>0 ? Math.round(c/t*100)+'%' : '—';
+}
+
+function updateHomeStats() {
+  const ids = Object.keys(DB.cards);
+  const studied = ids.filter(id => DB.cards[id].seen > 0).length;
+  let totalA=0, totalC=0, totalW=0;
+  ids.forEach(id => {
+    totalA += DB.cards[id].seen;
+    totalC += DB.cards[id].correct;
+    totalW += DB.cards[id].wrong;
+  });
+  document.getElementById('s-studied').textContent = studied;
+  document.getElementById('s-acc').textContent = totalA>0 ? Math.round(totalC/totalA*100)+'%' : '—';
+  document.getElementById('s-errors').textContent = totalW;
+  document.getElementById('s-streak').textContent = DB.stats.streak;
+}
+
+function updateWrongList() {
+  const sorted = CARDS
+    .map(c => ({ ...c, w: (DB.cards[c.id]||{wrong:0}).wrong }))
+    .filter(c => c.w > 0)
+    .sort((a,b) => b.w - a.w)
+    .slice(0,5);
+
+  const wrap = document.getElementById('wrong-section');
+  const list = document.getElementById('wrong-list');
+  if (sorted.length === 0) { wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  list.innerHTML = sorted.map(c => `
+    <div class="wrong-row">
+      <span class="q">(${c.id}) ${c.q.replace(/<em>/g,'').replace(/<\/em>/g,'')}</span>
+      <span class="wrong-badge">✕ ${c.w}回</span>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// BUILD QUEUE
+// ══════════════════════════════════════════
+function buildQueue() {
+  let cards = [...CARDS];
+  if (cfg.order === 'rand') {
+    cards.sort(() => Math.random()-0.5);
+  } else if (cfg.order === 'wrong') {
+    cards.sort((a,b) => {
+      const wa = (DB.cards[a.id]||{wrong:0}).wrong;
+      const wb = (DB.cards[b.id]||{wrong:0}).wrong;
+      return wb - wa;
+    });
+  } else if (cfg.order === 'unseen') {
+    cards.sort((a,b) => {
+      const sa = (DB.cards[a.id]||{seen:0}).seen;
+      const sb = (DB.cards[b.id]||{seen:0}).seen;
+      return sa - sb;
+    });
+  }
+  return cards.slice(0, cfg.count);
+}
+
+// ══════════════════════════════════════════
+// CARD RENDER
+// ══════════════════════════════════════════
+function renderCard(card) {
+  flipped = false;
+  const c3 = document.getElementById('card-3d');
+  c3.classList.remove('flipped');
+
+  const wc = (DB.cards[card.id]||{wrong:0}).wrong;
+  const badge = wc > 0 ? `<div class="wrong-count-badge">✕ ${wc}回</div>` : '';
+
+  document.getElementById('card-front').innerHTML = `
+    ${badge}
+    <div class="card-num">問題 ${card.id} / 30</div>
+    <div class="card-question">${card.q}</div>
+    <div class="card-tap-hint">↓ タップして答えを見る</div>
+  `;
+
+  const rows = card.homo.map(([k,v]) =>
+    `<tr class="${k===card.ans?'highlight':''}"><td>${k}</td><td>${v}</td></tr>`
+  ).join('');
+
+  document.getElementById('card-back-inner').innerHTML = `
+    <div class="back-answer">答え</div>
+    <div class="back-kanji">${card.ans}</div>
+    <div class="back-explanation">${card.exp}</div>
+    <div class="back-table-title">同音異義語の使い分け</div>
+    <table class="homo-table">${rows}</table>
+  `;
+
+  document.getElementById('answer-btns').classList.remove('visible');
+}
+
+function updateProgress() {
+  const total = session.queue.length;
+  const done = session.idx;
+  const pct = total > 0 ? (done/total*100) : 0;
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-text').textContent = `${done} / ${total}`;
+  document.getElementById('live-correct').textContent = session.correct;
+  document.getElementById('live-delta').textContent = session.delta;
+  document.getElementById('live-wrong').textContent = session.wrong;
+}
+
+// ══════════════════════════════════════════
+// STUDY FLOW
+// ══════════════════════════════════════════
+function startStudy() {
+  session.queue = buildQueue();
+  session.idx = 0;
+  session.correct = 0;
+  session.delta = 0;
+  session.wrong = 0;
+  session.sessionWrong = [];
+  session.sessionDelta = [];
+  show('study');
+  loadNext();
+}
+
+function loadNext() {
+  if (session.idx >= session.queue.length) { showResult(); return; }
+  const card = session.queue[session.idx];
+  renderCard(card);
+  updateProgress();
+}
+
+function flipCard() {
+  if (flipped) return;
+  flipped = true;
+  document.getElementById('card-3d').classList.add('flipped');
+  setTimeout(()=>{
+    document.getElementById('answer-btns').classList.add('visible');
+  }, 300);
+}
+
+function answer(type) {
+  const card = session.queue[session.idx];
+  const cd = getCard(DB, card.id);
+  cd.seen++;
+  DB.stats.totalAnswered++;
+  if (type === 'correct') {
+    cd.correct++;
+    DB.stats.totalCorrect++;
+    DB.stats.streak++;
+    session.correct++;
+  } else if (type === 'delta') {
+    cd.wrong++;
+    DB.stats.streak = 0;
+    session.delta++;
+    session.sessionDelta.push(card);
+  } else {
+    cd.wrong++;
+    DB.stats.streak = 0;
+    session.wrong++;
+    session.sessionWrong.push(card);
+  }
+  saveData(DB);
+  session.idx++;
+  setTimeout(loadNext, 200);
+}
+
+// ══════════════════════════════════════════
+// RESULT
+// ══════════════════════════════════════════
+function showResult() {
+  const total = session.queue.length;
+  const c = session.correct;
+  const d = session.delta;
+  const w = session.wrong;
+  const pct = total > 0 ? Math.round(c/total*100) : 0;
+
+  document.getElementById('res-date').textContent =
+    new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('res-score').textContent = pct+'%';
+  document.getElementById('res-total').textContent = total;
+  document.getElementById('res-correct').textContent = c;
+  document.getElementById('res-delta').textContent = d;
+  document.getElementById('res-wrong').textContent = w;
+
+  const wrap = document.getElementById('result-wrongs-wrap');
+  let html = '';
+  if (session.sessionWrong.length > 0) {
+    html += `<h3>✕ 不正解だった問題</h3>` +
+      session.sessionWrong.map(card =>
+        `<div class="result-wrong-item">
+          <span class="qi">(${card.id}) ${card.q.replace(/<em>/g,'').replace(/<\/em>/g,'')}</span>
+          <span class="ai">${card.ans}</span>
+          <span class="cnt">✕ ${(DB.cards[card.id]||{wrong:0}).wrong}回</span>
+        </div>`
+      ).join('');
+  }
+  if (session.sessionDelta.length > 0) {
+    html += `<h3 style="margin-top:1rem">△ うろ覚えだった問題</h3>` +
+      session.sessionDelta.map(card =>
+        `<div class="result-wrong-item" style="border-color:#c8960a44">
+          <span class="qi">(${card.id}) ${card.q.replace(/<em>/g,'').replace(/<\/em>/g,'')}</span>
+          <span class="ai" style="color:#c8960a">${card.ans}</span>
+          <span class="cnt" style="color:#c8960a">△</span>
+        </div>`
+      ).join('');
+  }
+  if (!html) {
+    html = `<div style="text-align:center;color:var(--green);font-size:1.1rem;padding:1rem">🎉 全問正解！</div>`;
+  }
+  wrap.innerHTML = html;
+
+  updateHeader();
+  updateHomeStats();
+  updateWrongList();
+  show('result');
+}
+
+// ══════════════════════════════════════════
+// EVENTS
+// ══════════════════════════════════════════
+// order buttons
+document.querySelectorAll('.btn-opt[data-order]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn-opt[data-order]').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    cfg.order = btn.dataset.order;
+  });
+});
+
+// count slider
+const slider = document.getElementById('count-slider');
+slider.addEventListener('input', () => {
+  cfg.count = +slider.value;
+  document.getElementById('count-lbl').textContent = slider.value;
+});
+
+// start
+document.getElementById('btn-start').addEventListener('click', startStudy);
+
+// card flip
+document.getElementById('card-scene').addEventListener('click', flipCard);
+
+// answer
+document.getElementById('btn-correct').addEventListener('click', ()=>answer('correct'));
+document.getElementById('btn-delta').addEventListener('click', ()=>answer('delta'));
+document.getElementById('btn-wrong').addEventListener('click', ()=>answer('wrong'));
+
+// quit
+document.getElementById('btn-quit').addEventListener('click', ()=>{ show('home'); updateHeader(); updateHomeStats(); updateWrongList(); });
+
+// result buttons
+document.getElementById('res-retry').addEventListener('click', startStudy);
+document.getElementById('res-wrong-only').addEventListener('click', ()=>{
+  const retry = [...session.sessionWrong, ...session.sessionDelta];
+  if (retry.length === 0) { startStudy(); return; }
+  session.queue = retry;
+  session.idx = 0; session.correct = 0; session.delta = 0; session.wrong = 0;
+  session.sessionWrong = []; session.sessionDelta = [];
+  show('study'); loadNext();
+});
+document.getElementById('res-home').addEventListener('click', ()=>{ show('home'); updateHeader(); updateHomeStats(); updateWrongList(); });
+
+// reset
+document.getElementById('btn-reset').addEventListener('click', ()=>{
+  if (confirm('学習データをすべてリセットしますか？')) {
+    DB = initData(); saveData(DB);
+    updateHeader(); updateHomeStats(); updateWrongList();
+  }
+});
+
+// ── init ──
+updateHeader();
+updateHomeStats();
+updateWrongList();
+</script>
+</body>
+</html>
