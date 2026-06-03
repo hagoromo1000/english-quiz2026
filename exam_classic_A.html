@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>テスト戦略 - Classic A</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+JP:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Serif JP',serif;background:#f5f0e8;color:#2a2218;min-height:100vh;padding:32px 20px}
+.app{max-width:780px;margin:0 auto}
+
+/* header */
+.header{text-align:center;margin-bottom:36px;padding-bottom:24px;border-bottom:2px solid #c8b89a}
+.header h1{font-family:'EB Garamond',serif;font-size:28px;font-weight:400;letter-spacing:0.12em;color:#2a2218}
+.header-sub{font-size:12px;color:#8a7a66;letter-spacing:0.15em;margin-top:6px;text-transform:uppercase}
+
+/* countdown top */
+.countdown-banner{background:#2a2218;color:#f5f0e8;border-radius:4px;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.cd-left{display:flex;align-items:baseline;gap:10px}
+.cd-num{font-family:'EB Garamond',serif;font-size:42px;font-weight:500;color:#d4b896}
+.cd-label{font-size:13px;letter-spacing:0.1em;color:#c8b89a}
+.cd-input-wrap{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.cd-input-label{font-size:11px;color:#8a7a66;letter-spacing:0.1em;text-transform:uppercase}
+.date-input{background:transparent;border:1px solid #6a5a48;border-radius:3px;color:#f5f0e8;font-size:13px;padding:5px 10px;font-family:inherit;cursor:pointer}
+.date-input:focus{outline:none;border-color:#d4b896}
+
+/* metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.metric{background:#fff;border:1px solid #d8caba;border-radius:4px;padding:14px 16px;text-align:center}
+.metric-label{font-size:10px;color:#8a7a66;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px}
+.metric-value{font-family:'EB Garamond',serif;font-size:26px;color:#2a2218}
+
+/* subject cards */
+.subject-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.subject-card{background:#fff;border:1px solid #d8caba;border-radius:4px;overflow:hidden}
+.card-header{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer}
+.card-header:hover{background:#faf7f2}
+.grip{color:#c8b89a;font-size:16px;cursor:grab;flex-shrink:0}
+.rank{font-family:'EB Garamond',serif;font-size:18px;color:#c8b89a;min-width:24px}
+.subject-name{font-size:15px;font-weight:500;letter-spacing:0.04em;flex:1}
+.subject-badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:10px;padding:2px 8px;border-radius:2px;letter-spacing:0.06em;border:1px solid}
+.badge.苦手{color:#a05050;border-color:#d4a0a0;background:#fdf5f5}
+.badge.普通{color:#506890;border-color:#a0b8d4;background:#f5f8fd}
+.badge.得意{color:#406840;border-color:#90b890;background:#f5fdf5}
+.badge.やる気低{color:#a05050;border-color:#d4a0a0;background:#fdf5f5}
+.badge.やる気中{color:#806040;border-color:#c8a870;background:#fdf8f0}
+.badge.やる気高{color:#406840;border-color:#90b890;background:#f5fdf5}
+.badge.重要度低{color:#506890;border-color:#a0b8d4;background:#f5f8fd}
+.badge.重要度中{color:#806040;border-color:#c8a870;background:#fdf8f0}
+.badge.重要度高{color:#a05050;border-color:#d4a0a0;background:#fdf5f5}
+.mini-info{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0}
+.mini-pct{font-family:'EB Garamond',serif;font-size:15px;color:#8a7a66}
+.subject-cd{font-size:11px;color:#a05050;letter-spacing:0.06em}
+.chevron{color:#c8b89a;font-size:13px;transition:transform 0.2s;flex-shrink:0}
+.chevron.open{transform:rotate(180deg)}
+.del-btn{background:none;border:none;color:#c8b89a;cursor:pointer;font-size:14px;padding:2px 4px}
+.del-btn:hover{color:#a05050}
+
+/* card body */
+.card-body{border-top:1px solid #ece4d8;padding:18px;display:none;flex-direction:column;gap:16px}
+.card-body.open{display:flex}
+.section-label{font-size:10px;color:#8a7a66;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #ece4d8}
+
+/* awareness */
+.aware-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.aware-item{}
+.aware-label{font-size:11px;color:#8a7a66;letter-spacing:0.08em;margin-bottom:5px}
+.aware-select{width:100%;background:#faf7f2;border:1px solid #d8caba;border-radius:3px;color:#2a2218;font-size:13px;padding:5px 8px;font-family:inherit;cursor:pointer}
+.aware-select:focus{outline:none;border-color:#8a7a66}
+.memo-wrap{grid-column:1/-1}
+.memo-input{width:100%;background:#faf7f2;border:1px solid #d8caba;border-radius:3px;color:#2a2218;font-size:13px;padding:8px 10px;font-family:inherit;resize:none;min-height:44px}
+.memo-input:focus{outline:none;border-color:#8a7a66}
+
+/* stats */
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-box{background:#faf7f2;border:1px solid #ece4d8;border-radius:3px;padding:12px 14px}
+.stat-label{font-size:10px;color:#8a7a66;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px}
+.progress-bar-wrap{height:5px;background:#ece4d8;border-radius:3px;overflow:hidden;margin-bottom:5px}
+.progress-bar-fill{height:100%;border-radius:3px;background:#6a8a6a;transition:width 0.3s}
+.stat-text{font-size:12px;color:#8a7a66}
+.hours-row{display:flex;align-items:baseline;gap:6px;margin-top:4px}
+.hours-input{width:70px;background:#fff;border:1px solid #d8caba;border-radius:3px;color:#2a2218;font-size:16px;font-family:'EB Garamond',serif;padding:3px 8px}
+.hours-input:focus{outline:none;border-color:#8a7a66}
+
+/* exam date per subject */
+.exam-date-row{display:flex;align-items:center;gap:10px}
+.exam-date-label{font-size:11px;color:#8a7a66;letter-spacing:0.08em}
+.exam-date-input{background:#faf7f2;border:1px solid #d8caba;border-radius:3px;color:#2a2218;font-size:13px;padding:4px 8px;font-family:inherit;cursor:pointer}
+.exam-date-input:focus{outline:none;border-color:#8a7a66}
+.subject-days{font-size:13px;color:#a05050;font-family:'EB Garamond',serif}
+
+/* tasks */
+.task-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f0ebe2}
+.task-check{width:14px;height:14px;cursor:pointer;accent-color:#6a8a6a;flex-shrink:0}
+.task-text{font-size:13px;color:#4a3c2e;flex:1}
+.task-text.done{text-decoration:line-through;color:#c8b89a}
+.task-del{background:none;border:none;cursor:pointer;color:#c8b89a;font-size:13px}
+.task-del:hover{color:#a05050}
+.add-task-row{display:flex;gap:6px;margin-top:8px}
+.add-task-input{flex:1;background:#faf7f2;border:1px solid #d8caba;border-radius:3px;color:#2a2218;font-size:13px;padding:5px 10px;font-family:inherit}
+.add-task-input:focus{outline:none;border-color:#8a7a66}
+.add-task-btn{background:#2a2218;border:none;border-radius:3px;color:#f5f0e8;font-size:12px;padding:5px 14px;cursor:pointer;font-family:inherit;letter-spacing:0.08em}
+.add-task-btn:hover{background:#4a3c2e}
+
+/* add subject */
+.add-row{display:flex;gap:8px}
+.add-input{flex:1;background:#fff;border:1px solid #d8caba;border-radius:4px;color:#2a2218;font-size:14px;padding:10px 14px;font-family:inherit}
+.add-input:focus{outline:none;border-color:#8a7a66}
+.add-btn{background:#2a2218;border:none;border-radius:4px;color:#f5f0e8;font-size:13px;padding:10px 20px;cursor:pointer;font-family:inherit;letter-spacing:0.08em;white-space:nowrap}
+.add-btn:hover{background:#4a3c2e}
+.export-btn{background:transparent;border:1px solid #d8caba;border-radius:3px;color:#8a7a66;font-size:12px;padding:6px 14px;cursor:pointer;font-family:inherit;letter-spacing:0.08em}
+.export-btn:hover{background:#f0ebe2}
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-size:11px;color:#8a7a66;letter-spacing:0.15em;text-transform:uppercase}
+@media(max-width:600px){.metrics{grid-template-columns:repeat(2,1fr)}.aware-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Examination Strategy</h1>
+    <div class="header-sub">定期テスト 戦略ダッシュボード</div>
+  </div>
+
+  <div class="countdown-banner">
+    <div class="cd-left">
+      <div class="cd-num" id="cd-days">—</div>
+      <div class="cd-label">days until exam period</div>
+    </div>
+    <div class="cd-input-wrap">
+      <div class="cd-input-label">テスト期間 開始日</div>
+      <input type="date" class="date-input" id="exam-start">
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">科目数</div><div class="metric-value" id="m-sub">0</div></div>
+    <div class="metric"><div class="metric-label">完了タスク</div><div class="metric-value" id="m-done">0/0</div></div>
+    <div class="metric"><div class="metric-label">総進捗</div><div class="metric-value" id="m-prog">0%</div></div>
+    <div class="metric"><div class="metric-label">総勉強時間</div><div class="metric-value" id="m-hours">0h</div></div>
+  </div>
+
+  <div class="sec-header">
+    <div class="sec-title">科目リスト — drag to reorder</div>
+    <button class="export-btn" onclick="exportData()">Export</button>
+  </div>
+  <div class="subject-list" id="subject-list"></div>
+  <div class="add-row">
+    <input type="text" class="add-input" id="new-subject" placeholder="科目名を入力...">
+    <button class="add-btn" onclick="addSubject()">追加</button>
+  </div>
+</div>
+
+<script>
+let subjects=[
+  {id:1,name:"数学",open:false,awareness:"普通",motivation:"やる気中",importance:"重要度高",memo:"",tasks:[{text:"教科書例題",done:false},{text:"過去問2年分",done:false}],hours:0,examDate:""},
+  {id:2,name:"英語",open:false,awareness:"苦手",motivation:"やる気低",importance:"重要度高",memo:"",tasks:[{text:"単語帳100語",done:false}],hours:0,examDate:""},
+  {id:3,name:"物理",open:false,awareness:"得意",motivation:"やる気高",importance:"重要度中",memo:"",tasks:[{text:"公式まとめ",done:false}],hours:0,examDate:""},
+];
+let dragSrc=null;
+const AWARE=['苦手','普通','得意'];
+const MOT=['やる気低','やる気中','やる気高'];
+const IMP=['重要度低','重要度中','重要度高'];
+
+function daysUntil(dateStr){
+  if(!dateStr)return null;
+  const diff=Math.ceil((new Date(dateStr)-new Date())/(1000*60*60*24));
+  return diff;
+}
+function save(){try{localStorage.setItem('exam_classic_a',JSON.stringify({subjects,examStart:document.getElementById('exam-start').value}))}catch(e){}}
+
+function render(){
+  const list=document.getElementById('subject-list');
+  list.innerHTML='';
+  subjects.forEach((s,i)=>{
+    const total=s.tasks.length;
+    const done=s.tasks.filter(t=>t.done).length;
+    const pct=total>0?Math.round(done/total*100):0;
+    const days=daysUntil(s.examDate);
+    const daysText=days===null?'—':days>0?days+'日後':'今日';
+    const card=document.createElement('div');
+    card.className='subject-card';
+    card.draggable=true;
+    card.dataset.id=s.id;
+    card.innerHTML=`
+      <div class="card-header" onclick="toggleCard(${s.id})">
+        <span class="grip" onclick="event.stopPropagation()">⠿</span>
+        <span class="rank">${i+1}.</span>
+        <div style="flex:1;min-width:0">
+          <div class="subject-name">${s.name}</div>
+          <div class="subject-badges" style="margin-top:4px">
+            <span class="badge ${s.awareness}">${s.awareness}</span>
+            <span class="badge ${s.motivation}">${s.motivation}</span>
+            <span class="badge ${s.importance}">${s.importance}</span>
+          </div>
+        </div>
+        <div class="mini-info">
+          <div style="text-align:right">
+            <div class="subject-cd">${s.examDate?daysText+' まで':''}</div>
+            <div class="mini-pct">${pct}%</div>
+          </div>
+        </div>
+        <span class="chevron ${s.open?'open':''}">▼</span>
+        <button class="del-btn" onclick="event.stopPropagation();removeSubject(${s.id})">✕</button>
+      </div>
+      <div class="card-body ${s.open?'open':''}">
+        <div>
+          <div class="section-label">テスト日</div>
+          <div class="exam-date-row">
+            <span class="exam-date-label">この科目のテスト日</span>
+            <input type="date" class="exam-date-input" value="${s.examDate}" onchange="updateField(${s.id},'examDate',this.value)">
+            <span class="subject-days">${s.examDate?(days>0?'あと'+days+'日':days===0?'今日！':days+'日'):'—'}</span>
+          </div>
+        </div>
+        <div>
+          <div class="section-label">意識・状態</div>
+          <div class="aware-grid">
+            <div class="aware-item"><div class="aware-label">得意・苦手</div>
+              <select class="aware-select" onchange="updateField(${s.id},'awareness',this.value)">
+                ${AWARE.map(v=>`<option ${s.awareness===v?'selected':''}>${v}</option>`).join('')}
+              </select>
+            </div>
+            <div class="aware-item"><div class="aware-label">やる気</div>
+              <select class="aware-select" onchange="updateField(${s.id},'motivation',this.value)">
+                ${MOT.map(v=>`<option ${s.motivation===v?'selected':''}>${v}</option>`).join('')}
+              </select>
+            </div>
+            <div class="aware-item"><div class="aware-label">重要度</div>
+              <select class="aware-select" onchange="updateField(${s.id},'importance',this.value)">
+                ${IMP.map(v=>`<option ${s.importance===v?'selected':''}>${v}</option>`).join('')}
+              </select>
+            </div>
+            <div class="aware-item memo-wrap"><div class="aware-label">メモ・方針</div>
+              <textarea class="memo-input" rows="2" placeholder="対策方針など..." onchange="updateField(${s.id},'memo',this.value)">${s.memo}</textarea>
+            </div>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-label">タスク進捗</div>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+            <div class="stat-text">${done} / ${total} 完了</div>
+          </div>
+          <div class="stat-box"><div class="stat-label">勉強時間</div>
+            <div class="hours-row">
+              <input type="number" class="hours-input" min="0" step="0.5" value="${s.hours}" onchange="updateField(${s.id},'hours',parseFloat(this.value)||0)">
+              <span style="font-size:13px;color:#8a7a66">h</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label">タスク</div>
+          ${s.tasks.map((t,ti)=>`
+            <div class="task-row">
+              <input type="checkbox" class="task-check" ${t.done?'checked':''} onchange="toggleTask(${s.id},${ti})">
+              <span class="task-text ${t.done?'done':''}">${t.text}</span>
+              <button class="task-del" onclick="removeTask(${s.id},${ti})">✕</button>
+            </div>`).join('')}
+          <div class="add-task-row">
+            <input type="text" class="add-task-input" id="ti-${s.id}" placeholder="タスクを追加..." onkeydown="if(event.key==='Enter')addTask(${s.id})">
+            <button class="add-task-btn" onclick="addTask(${s.id})">追加</button>
+          </div>
+        </div>
+      </div>
+    `;
+    card.addEventListener('dragstart',e=>{dragSrc=s.id;setTimeout(()=>card.classList.add('dragging'),0);e.dataTransfer.effectAllowed='move';});
+    card.addEventListener('dragend',()=>{card.classList.remove('dragging');document.querySelectorAll('.subject-card').forEach(c=>c.classList.remove('drag-over'));});
+    card.addEventListener('dragover',e=>{e.preventDefault();card.classList.add('drag-over');});
+    card.addEventListener('dragleave',()=>card.classList.remove('drag-over'));
+    card.addEventListener('drop',e=>{e.preventDefault();card.classList.remove('drag-over');if(dragSrc===s.id)return;const fi=subjects.findIndex(x=>x.id===dragSrc);const ti=subjects.findIndex(x=>x.id===s.id);const[moved]=subjects.splice(fi,1);subjects.splice(ti,0,moved);render();save();});
+    list.appendChild(card);
+  });
+  updateMetrics();
+}
+function toggleCard(id){const s=subjects.find(x=>x.id===id);if(s){s.open=!s.open;render();save();}}
+function updateField(id,field,val){const s=subjects.find(x=>x.id===id);if(s){s[field]=val;render();save();}}
+function toggleTask(sid,ti){const s=subjects.find(x=>x.id===sid);if(s){s.tasks[ti].done=!s.tasks[ti].done;render();save();}}
+function removeTask(sid,ti){const s=subjects.find(x=>x.id===sid);if(s){s.tasks.splice(ti,1);render();save();}}
+function addTask(sid){const inp=document.getElementById('ti-'+sid);if(!inp||!inp.value.trim())return;const s=subjects.find(x=>x.id===sid);if(s){s.tasks.push({text:inp.value.trim(),done:false});render();save();}}
+function removeSubject(id){if(confirm('削除しますか？')){subjects=subjects.filter(x=>x.id!==id);render();save();}}
+function addSubject(){const inp=document.getElementById('new-subject');if(!inp.value.trim())return;subjects.push({id:Date.now(),name:inp.value.trim(),open:true,awareness:'普通',motivation:'やる気中',importance:'重要度中',memo:'',tasks:[],hours:0,examDate:''});inp.value='';render();save();}
+function updateMetrics(){
+  const total=subjects.reduce((a,s)=>a+s.tasks.length,0);
+  const done=subjects.reduce((a,s)=>a+s.tasks.filter(t=>t.done).length,0);
+  const pct=total>0?Math.round(done/total*100):0;
+  const hours=subjects.reduce((a,s)=>a+s.hours,0);
+  document.getElementById('m-sub').textContent=subjects.length;
+  document.getElementById('m-done').textContent=done+'/'+total;
+  document.getElementById('m-prog').textContent=pct+'%';
+  document.getElementById('m-hours').textContent=hours.toFixed(1)+'h';
+}
+function updateCountdown(){
+  const d=document.getElementById('exam-start').value;
+  const el=document.getElementById('cd-days');
+  if(!d){el.textContent='—';return;}
+  const diff=Math.ceil((new Date(d)-new Date())/(1000*60*60*24));
+  el.textContent=diff>0?diff:diff===0?'0':'past';
+  save();
+}
+function exportData(){
+  const lines=['定期テスト戦略 / '+new Date().toLocaleDateString('ja-JP'),''];
+  subjects.forEach((s,i)=>{
+    const done=s.tasks.filter(t=>t.done).length;
+    lines.push((i+1)+'. '+s.name+(s.examDate?' ['+s.examDate+']':''));
+    lines.push('   '+s.awareness+' / '+s.motivation+' / '+s.importance);
+    lines.push('   勉強時間: '+s.hours+'h / タスク: '+done+'/'+s.tasks.length);
+    if(s.memo)lines.push('   '+s.memo);
+    s.tasks.forEach(t=>lines.push('   ['+(t.done?'x':' ')+'] '+t.text));
+    lines.push('');
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='exam_plan.txt';a.click();
+}
+document.getElementById('exam-start').addEventListener('change',updateCountdown);
+try{const d=JSON.parse(localStorage.getItem('exam_classic_a')||'{}');if(d.subjects)subjects=d.subjects;if(d.examStart)document.getElementById('exam-start').value=d.examStart;}catch(e){}
+render();updateCountdown();
+</script>
+</body>
+</html>
